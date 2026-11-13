@@ -11,6 +11,30 @@ import {mcpVault} from './axon-connectors.js';
 
 type ConnectionId='zapier'|'buffer';
 const endpoints={zapier:'https://mcp.zapier.com/api/v1/connect',buffer:'https://mcp.buffer.com/mcp'};
+/** A single tool schema larger than this is summarized for model planning. */
+const PLANNING_SCHEMA_BYTES=2048;
+/** Summarize an oversized tool schema for the model's planning prompt.
+ *
+ * The model only ever plans against this summary. The action is still
+ * validated against the full discovered schema before dispatch, so no guard
+ * is relaxed; this keeps one oversized provider schema from consuming a
+ * bounded local-model input budget and making MCP unusable there.
+ */
+function planningSchema(schema:any):any{
+ if(!schema||typeof schema!=='object')return {type:'object'};
+ const raw=JSON.stringify(schema);
+ if(Buffer.byteLength(raw,'utf8')<=PLANNING_SCHEMA_BYTES)return schema;
+ const properties:any={};
+ for(const [key,value] of Object.entries((schema.properties??{}) as Record<string,any>)){
+  if(!value||typeof value!=='object'){properties[key]={type:'string'};continue}
+  const compact:any={type:typeof value.type==='string'?value.type:'object'};
+  if(typeof value.description==='string'&&value.description)compact.description=value.description.slice(0,160);
+  if(Array.isArray(value.enum)&&value.enum.length<=12)compact.enum=value.enum.slice(0,12);
+  if(value.type==='array'&&value.items&&typeof value.items.type==='string')compact.items={type:value.items.type};
+  properties[key]=compact;
+ }
+ return {type:schema.type==='object'?'object':(typeof schema.type==='string'?schema.type:'object'),properties,...(Array.isArray(schema.required)&&schema.required.length?{required:schema.required.slice(0,16)}:{}),note:'Simplified schema. Supply only the documented fields; the full schema is validated before dispatch.'};
+}
 const idOf=(v:unknown):ConnectionId=>{if(v!=='zapier'&&v!=='buffer')throw new MCPError('Unknown fixed MCP connection.',404);return v};
 const NOTICE='Discovery does not verify app access. Each successful Zapier app action, including reads, uses two shared plan tasks. Confirm existing included allowance and disabled overage billing before enabling calls. No automatic retries.';
 export class MCPError extends Error {constructor(message:string,public status:400|404|409|413|424|502=400){super(message)}}
@@ -123,7 +147,7 @@ export function validateMCPAction(owner:string,args:any){
  if(id==='zapier'&&generic.has(args.toolName)&&!Object.entries(args.arguments).some(([k,v])=>/^(?:action_id|actionId|zapier_action_id|zapierActionId)$/.test(k)&&typeof v==='string'&&/^[A-Za-z0-9_.:-]{1,200}$/.test(v)))fail('Generic Zapier execution requires a concrete nested action ID and exact review.');
  return {operation:'mcp.call' as const,args:JSON.parse(JSON.stringify(args)),policy:t.policy as string,forceReview:!!d.forceReview};
 }
-export function mcpModelCatalog(owner:string,ids:string[]){return JSON.stringify(ids.filter(id=>Object.hasOwn(endpoints,id)).flatMap(id=>{const c=mcpConnectionView(owner,id as ConnectionId);if(c.status!=='discovered'||!c.quotaConfirmed)return [];return c.tools.filter(t=>!t.blocked&&t.policy!=='disabled').map(t=>({operation:'mcp.call',connectionId:id,toolName:t.name,revision:c.revision,schemaHash:t.schemaHash,inputSchema:t.inputSchema,policy:t.forceReview?'review':t.policy,description:t.description,...(id==='buffer'?{boundary:'create_post requires saveToDraft:true. No publishing mode. Editing is blocked.'}:{})}))}));}
+export function mcpModelCatalog(owner:string,ids:string[]){return JSON.stringify(ids.filter(id=>Object.hasOwn(endpoints,id)).flatMap(id=>{const c=mcpConnectionView(owner,id as ConnectionId);if(c.status!=='discovered'||!c.quotaConfirmed)return [];return c.tools.filter(t=>!t.blocked&&t.policy!=='disabled').map(t=>({operation:'mcp.call',connectionId:id,toolName:t.name,revision:c.revision,schemaHash:t.schemaHash,inputSchema:planningSchema(t.inputSchema),policy:t.forceReview?'review':t.policy,description:t.description,...(id==='buffer'?{boundary:'create_post requires saveToDraft:true. No publishing mode. Editing is blocked.'}:{})}))}));}
 export function mountMCP(app:Hono<AuthVars>,chatView:(r:any)=>any,isBusy:(id:string)=>boolean,stop:(id:string)=>void,service=mcpService){
  const api=new Hono<AuthVars>();api.use('*',requireUser);api.onError((e,c)=>e instanceof MCPError?c.json({error:e.message},e.status):c.json({error:'The MCP operation failed safely. No credentials were returned.'},502));
  api.get('/mcp/connections',c=>c.json({connections:[mcpConnectionView(c.get('user').id,'zapier'),mcpConnectionView(c.get('user').id,'buffer')]}));

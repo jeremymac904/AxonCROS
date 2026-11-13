@@ -51,6 +51,7 @@ node --import tsx server/scripts/axon-connectors-test.ts
 node --import tsx server/scripts/local-model-test.ts
 node --import tsx server/scripts/axon-agent-actions-test.ts
 node --import tsx server/scripts/axon-mcp-test.ts
+node --import tsx server/scripts/axon-model-mcp-test.ts
 node web/scripts/google-agent-worker-test.mjs
 cd ..
 python3 script/test_source_release.py

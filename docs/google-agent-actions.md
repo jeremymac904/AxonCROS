@@ -59,9 +59,12 @@ scripts or shell commands from the model.
 Current operation limits: Gmail reads plain-text parts, without automatically
 fetching attachments. Drive reads text, Markdown, CSV, JSON, Google Docs exports
 and the first 20 PDF pages, with bounded returned text and a 2 MB response cap.
-Drive edits require a returned HTTP ETag and fail if the provider cannot supply
-one. Sheets writes use RAW values and at most 500 cells, so text beginning with
-`=` is not automatically interpreted as a formula.
+Drive edits read one Drive v2 metadata snapshot that carries the file version,
+and send that version back as a conditional `If-Match` request. An edit fails
+without changing the file when the provider supplies no usable version, when the
+file changed since it was read, or when the provider rejects the stale version.
+Nothing is retried automatically. Sheets writes use RAW values and at most 500
+cells, so text beginning with `=` is not automatically interpreted as a formula.
 
 Keep the Mac app open while actions run. Stop ends further dispatch; an already
 sent provider request may still complete. An unknown outcome must be inspected

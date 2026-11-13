@@ -20,6 +20,21 @@ WhatsApp is built directly into AxonCROS through its own QR-linked session, sepa
 
 Enable MCP separately in a chat, select its allowed connections and acknowledge that retrieved results can enter the configured model. Only then request a specific synthetic test. Verify the saved provider receipt; a successful discovery is not a successful action.
 
+## Using a local model for connected actions
+
+Agent mode works with a locally hosted model as well as the hosted subscription.
+The model chooses the MCP tool; the app still validates the proposed arguments
+against the full discovered schema and the saved per-tool policy, and only the
+fixed provider endpoint is called. A local model therefore needs no hosted
+allowance and makes no paid inference call.
+
+One provider tool can ship a very large schema. When a single tool schema is
+larger than 2 KB, the model is shown a simplified planning summary of that
+tool's fields instead of its full schema, so one oversized schema cannot
+consume a bounded local-model input budget. The action itself is still
+validated against the complete discovered schema before dispatch, and a
+simplified summary never widens what a tool permits.
+
 Official references: [Zapier connection methods](https://docs.zapier.com/mcp/overview/how-connections-work), [Zapier usage](https://docs.zapier.com/mcp/overview/usage), [Buffer MCP](https://developers.buffer.com/guides/integrations/mcp), [Buffer limits](https://developers.buffer.com/guides/api-limits.html).
 
 ## iMessage on a Mac
@@ -37,3 +52,14 @@ An optional signature package can live outside the checkout at `~/Library/Applic
 ## Synthetic verification
 
 Run `node --import tsx server/scripts/axon-mcp-test.ts` from `bot-hq` and the native scripts `test_native_email_signature.sh` and `test_native_messages.sh` from the repository root under `mac-wrapper/script`. These use fake transports and temporary storage; they do not send email, iMessages, posts or paid MCP calls. Actual provider authorization and live receipts remain separate acceptance steps.
+
+`node --import tsx server/scripts/axon-model-mcp-test.ts` is an **opt-in,
+local-only** model-driven acceptance check. Without `AXON_MCP_TEST_PROFILE` it
+skips cleanly, so it is safe in continuous integration and never needs a
+credential. When it is pointed at an isolated owner profile and a local model
+endpoint, it lets the model choose a delegated read tool, lets the app validate
+and dispatch it, and asserts that no write tool was attempted or executed. It
+runs against a separate database and its own copy of the connector key, and
+reports only tool names, states and error codes — never a credential, token or
+provider payload.
+
