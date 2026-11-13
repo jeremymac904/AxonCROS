@@ -40,13 +40,14 @@ cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <key>CFBundleName</key><string>AxonCROS</string>
 <key>CFBundleDisplayName</key><string>AxonCROS</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
-<key>CFBundleVersion</key><string>20</string>
-<key>CFBundleShortVersionString</key><string>3.2.1</string>
+<key>CFBundleVersion</key><string>21</string>
+<key>CFBundleShortVersionString</key><string>3.3.0</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSPrincipalClass</key><string>NSApplication</string>
 <key>NSMicrophoneUsageDescription</key><string>AxonCROS uses the microphone only when you start dictation or a voice conversation.</string>
 <key>NSSpeechRecognitionUsageDescription</key><string>AxonCROS converts your speech to editable text using on-device recognition when you request dictation.</string>
 <key>NSContactsUsageDescription</key><string>AxonCROS reads contacts you choose to synchronize from this Mac and applies only contact edits you explicitly review. Your AxonCROS notes remain local.</string>
+<key>NSAppleEventsUsageDescription</key><string>AxonCROS sends iMessages through Messages only for actions you approve or explicitly delegate in a chat.</string>
 </dict></plist>
 PLIST
 if [[ "$verification_build" == "1" ]]; then
@@ -68,8 +69,8 @@ cat > "$helper/Contents/Info.plist" <<'PLIST'
 <key>CFBundleIdentifier</key><string>local.bot-hq.desktop.filepicker</string>
 <key>CFBundleName</key><string>AxonCROS File Picker</string>
 <key>CFBundleDisplayName</key><string>AxonCROS File Picker</string>
-<key>CFBundleVersion</key><string>20</string>
-<key>CFBundleShortVersionString</key><string>3.2.1</string>
+<key>CFBundleVersion</key><string>21</string>
+<key>CFBundleShortVersionString</key><string>3.3.0</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>LSUIElement</key><true/>
 <key>NSPrincipalClass</key><string>NSApplication</string>

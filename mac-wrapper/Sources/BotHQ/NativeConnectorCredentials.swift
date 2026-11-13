@@ -4,13 +4,14 @@ import NativePanelFactory
 /// Picker-to-loopback credential provisioning. Secret bytes never enter WebKit.
 final class NativeConnectorCredentials {
     private var busy = false
-    static let providers: Set<String> = ["withings", "plaid", "whatsapp"]
+    static let providers: Set<String> = ["withings", "plaid", "whatsapp", "zapier", "buffer"]
     static func validated(_ input: [String: Any], provider: String) throws -> [String: Any] {
         guard providers.contains(provider) else { throw Invalid.file }
-        let fields = provider == "plaid" ? ["clientId", "clientSecret", "accessToken"] : provider == "whatsapp" ? ["accessToken", "phoneNumberId"] : ["accessToken"]
+        let fields = ["zapier", "buffer"].contains(provider) ? ["connectionToken"] : provider == "plaid" ? ["clientId", "clientSecret", "accessToken"] : provider == "whatsapp" ? ["accessToken", "phoneNumberId"] : ["accessToken"]
+        if ["zapier", "buffer"].contains(provider), Set(input.keys) != Set(["connectionToken"]) { throw Invalid.file }
         var result: [String: Any] = [:]
         for field in fields {
-            guard let value = input[field] as? String, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, value.count <= 8192 else { throw Invalid.file }
+            guard let value = input[field] as? String, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, value.utf8.count <= 8192, !value.unicodeScalars.contains(where: { $0.value == 0 || $0.value == 10 || $0.value == 13 }) else { throw Invalid.file }
             result[field] = value
         }
         if provider == "plaid" { guard input["environment"] as? String == "sandbox" else { throw Invalid.file }; result["environment"] = "sandbox" }
@@ -33,7 +34,7 @@ final class NativeConnectorCredentials {
                     let response = try await submit(payload)
                     try await authorize()
                     reply(response, nil)
-                } catch is Invalid { reply(nil, "Invalid connector JSON. Required fields: \(provider == "plaid" ? "clientId, clientSecret, accessToken, environment: sandbox (production is blocked)" : provider == "whatsapp" ? "accessToken and numeric phoneNumberId" : "accessToken"). Choose an existing file under 32 KB; no settings changed.") }
+                } catch is Invalid { reply(nil, "Invalid connector JSON. Required fields: \(["zapier", "buffer"].contains(provider) ? "connectionToken only (no server URL)" : provider == "plaid" ? "clientId, clientSecret, accessToken, environment: sandbox (production is blocked)" : provider == "whatsapp" ? "accessToken and numeric phoneNumberId" : "accessToken"). Choose an existing file under 32 KB; no settings changed.") }
                 catch { reply(nil, "Connector credentials could not be saved. Check that the local app is unlocked and retry. No secret values were returned.") }
             }
         }

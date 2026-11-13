@@ -161,6 +161,28 @@ final class ActionFixtureProtocol: URLProtocol {
         let retiredOutput = try await afterDispatch.value
         check(retiredOutput["status"] as? String == "unknown" && store.records[pendingKey]?["state"] as? String == "pending", "Owner retirement after dispatch retains pending unknown receipt")
         ActionFixtureProtocol.delay = 0
+        // Exercise the actual Gmail wire path with a private synthetic package.
+        let signatureRoot = URL(fileURLWithPath: "/private/tmp/axon-action-signature-" + UUID().uuidString)
+        try FileManager.default.createDirectory(at: signatureRoot, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
+        defer { try? FileManager.default.removeItem(at: signatureRoot) }
+        func privateFile(_ name: String, _ data: Data) throws { let url = signatureRoot.appendingPathComponent(name); try data.write(to: url); try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path) }
+        let signatureHTML = (0..<12).map { "<img src=\"cid:synthetic\($0)\">" }.joined()
+        let signatureText = "Synthetic approved signature", image = Data("GIF89aSYNTHETIC".utf8)
+        var assetRows: [[String: Any]] = []
+        for index in 0..<12 { let file = "asset\(index).gif"; try privateFile(file, image); assetRows.append(["file": file, "cid": "synthetic\(index)", "mimeType": "image/gif", "sha256": NativeEmailSignature.digest(image)]) }
+        try privateFile("signature.html", Data(signatureHTML.utf8)); try privateFile("signature.txt", Data(signatureText.utf8))
+        try privateFile("manifest.json", JSONSerialization.data(withJSONObject: ["version": 1, "senderEmail": "synthetic@example.invalid", "htmlFile": "signature.html", "textFile": "signature.txt", "htmlSHA256": NativeEmailSignature.digest(Data(signatureHTML.utf8)), "textSHA256": NativeEmailSignature.digest(Data(signatureText.utf8)), "assets": assetRows]))
+        let signedRunner = NativeGoogleActions(storage: store, session: session, signatureDirectory: signatureRoot)
+        let signed = try await signedRunner.execute(owner: owner, account: account, token: fakeToken, granted: grants, operation: "gmail.draft", args: send.1, requestId: UUID().uuidString, senderEmail: "synthetic@example.invalid", authorize: {})
+        let envelope = try JSONSerialization.jsonObject(with: ActionFixtureProtocol.bodies.last!) as! [String: Any]
+        let raw = (envelope["message"] as! [String: Any])["raw"] as! String
+        let normal = raw.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        let mime = String(data: Data(base64Encoded: normal + String(repeating: "=", count: (4 - normal.count % 4) % 4))!, encoding: .utf8)!
+        check(signed["status"] as? String == "completed" && mime.contains("multipart/alternative") && mime.components(separatedBy: "Content-ID:").count - 1 == 12, "Actual Gmail draft request carries12 signed inline CID parts")
+        try FileManager.default.removeItem(at: signatureRoot.appendingPathComponent("asset0.gif"))
+        let noSend = ActionFixtureProtocol.requests.count
+        do { _ = try await signedRunner.execute(owner: owner, account: account, token: fakeToken, granted: grants, operation: send.0, args: send.1, requestId: UUID().uuidString, senderEmail: "synthetic@example.invalid", authorize: {}); fatalError("Unsigned send escaped broken signature") }
+        catch { check(ActionFixtureProtocol.requests.count == noSend, "Broken configured signature blocks Gmail send before network dispatch") }
         check(NativeGoogleActions.catalog.count == 20, "Catalog contains exactly 20 supported operations")
         print(String(data: try JSONSerialization.data(withJSONObject: ["passed": true, "checks": checks, "checkCount": checks.count, "liveProviderCalls": 0, "realCredentials": false], options: [.prettyPrinted, .sortedKeys]), encoding: .utf8)!)
     }

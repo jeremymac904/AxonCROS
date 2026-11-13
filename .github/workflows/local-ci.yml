@@ -45,6 +45,7 @@ jobs:
           if test -f server/scripts/axon-connectors-test.ts; then node --import tsx server/scripts/axon-connectors-test.ts; fi
           if test -f server/scripts/local-model-test.ts; then node --import tsx server/scripts/local-model-test.ts; fi
           node --import tsx server/scripts/axon-agent-actions-test.ts
+          node --import tsx server/scripts/axon-mcp-test.ts
           node web/scripts/google-agent-worker-test.mjs
   native:
     runs-on: macos-15
@@ -63,6 +64,8 @@ jobs:
           if test -f mac-wrapper/script/test_local_installation.sh; then bash mac-wrapper/script/test_local_installation.sh; fi
           if test -f mac-wrapper/script/test_native_workspace.sh; then bash mac-wrapper/script/test_native_workspace.sh; fi
           bash mac-wrapper/script/test_native_google_actions.sh
+          bash mac-wrapper/script/test_native_email_signature.sh
+          bash mac-wrapper/script/test_native_messages.sh
           if test -f mac-wrapper/script/test_native_picker_process.sh; then bash mac-wrapper/script/test_native_picker_process.sh; fi
           bash mac-wrapper/script/test_native_path_selection.sh
       - name: Compile native wrapper without installing or launching

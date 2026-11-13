@@ -1,0 +1,14 @@
+.axon-mcp-settings { margin-top: 28px; }
+.axon-mcp-overview { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.axon-mcp-overview > div { flex: 1 1 320px; }
+.axon-mcp-tools { display: grid; gap: 12px; margin: 16px 0; }
+.axon-mcp-tools article { min-width: 0; }
+.axon-mcp-tools code, .axon-mcp-tools small { overflow-wrap: anywhere; }
+.axon-mcp-tools h4 { margin: 0 0 8px; }
+.axon-mcp-tools label { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+.axon-mcp-tools pre { max-height: 300px; overflow: auto; }
+.axon-mcp-tools details { margin-top: 12px; }
+.axon-mcp-mode { border-top: 1px solid var(--ax-border, #e3e7ec); }
+
+.axon-mcp-mode .axon-agent-mode-row + .axon-agent-mode-row { margin-top: 10px; }
+.axon-mcp-overview + .axon-mcp-overview { margin-top: 12px; }

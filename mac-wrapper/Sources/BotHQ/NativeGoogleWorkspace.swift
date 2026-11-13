@@ -10,13 +10,13 @@ final class NativeGoogleWorkspace {
     private var busy: Set<String> = []
     private var receiver: ContactOAuthReceiver?
     private var authorizationGeneration = 0
-    init(service: String, storage: ContactCredentialStorage? = nil, transport: URLSession? = nil) {
+    init(service: String, storage: ContactCredentialStorage? = nil, transport: URLSession? = nil, signatureDirectory: URL? = nil) {
         secrets = storage ?? ContactSecrets(service: service)
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 20; config.timeoutIntervalForResource = 30
         config.httpCookieStorage = nil; config.urlCache = nil
         session = transport ?? URLSession(configuration: config, delegate: WorkspaceHTTPRedirects(), delegateQueue: nil)
-        actions = NativeGoogleActions(storage: secrets, session: session)
+        actions = NativeGoogleActions(storage: secrets, session: session, signatureDirectory: signatureDirectory)
     }
     func handles(_ action: String) -> Bool {
         ["executeGoogleAction", "googleActionCatalog", "cancelGoogleActions", "googleWorkspaceStatus", "configureGoogleWorkspace", "connectGoogleWorkspace", "cancelGoogleWorkspaceAuth", "disconnectGoogleWorkspace", "readGoogleWorkspace", "checkGoogleWorkspace"].contains(action)
@@ -105,7 +105,7 @@ final class NativeGoogleWorkspace {
         try await check()
         guard let token = auth["access_token"] as? String, auth["needsReconnect"] as? Bool != true else { throw Failure.message("Reconnect Workspace before using Google actions.") }
         let grants = Set((auth["scope"] as? String ?? "").split(separator: " ").map(String.init))
-        return try await actions.execute(owner: scope, account: account, token: token, granted: grants, operation: operation, args: args, requestId: requestId, authorize: check)
+        return try await actions.execute(owner: scope, account: account, token: token, granted: grants, operation: operation, args: args, requestId: requestId, senderEmail: auth["accountName"] as? String, authorize: check)
         } catch {
             // NativeGoogleActions returns unknown after dispatch; a thrown error is
             // pre-dispatch. Never translate an owner/session loss into a receipt.

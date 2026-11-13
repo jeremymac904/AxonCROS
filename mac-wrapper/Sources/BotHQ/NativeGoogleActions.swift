@@ -10,8 +10,9 @@ final class NativeGoogleActions {
     struct HTTPFailure: Error { let status: Int }
     private let storage: ContactCredentialStorage
     private let session: URLSession
+    private let signatureDirectory: URL?
     private var running: Set<String> = []
-    init(storage: ContactCredentialStorage, session: URLSession) { self.storage = storage; self.session = session }
+    init(storage: ContactCredentialStorage, session: URLSession, signatureDirectory: URL? = nil) { self.storage = storage; self.session = session; self.signatureDirectory = signatureDirectory }
     static let fields: [String: [String]] = [
         "gmail.search": ["query", "limit"], "gmail.read": ["id"],
         "gmail.draft": ["to", "subject", "body", "cc", "bcc", "threadId"], "gmail.send": ["to", "subject", "body", "cc", "bcc", "threadId"],
@@ -84,7 +85,7 @@ final class NativeGoogleActions {
         if operation == "gmail.draft" || operation == "gmail.send" {
             let recipients = try emails(a, "to", required: true) + emails(a, "cc") + emails(a, "bcc")
             guard recipients.count <= 20 else { throw Failure(message: "At most 20 total recipients are allowed.") }
-            let s = try text(a, "subject", required: true)!; guard !s.contains("\r"), !s.contains("\n") else { throw Failure(message: "Subject cannot contain header delimiters.") }; _ = try text(a, "body", required: true, max: 40000)
+            let s = try text(a, "subject", required: true)!; guard !s.unicodeScalars.contains(where: { $0.value == 10 || $0.value == 13 }) else { throw Failure(message: "Subject cannot contain header delimiters.") }; _ = try text(a, "body", required: true, max: 40000)
         }
         if ["gmail.read", "gmail.modify", "drive.read", "drive.update", "drive.trash", "calendar.update"].contains(operation) { _ = try id(a, "id") }
         if operation == "gmail.modify" {
@@ -122,7 +123,7 @@ final class NativeGoogleActions {
             if operation == "contacts.update" { guard let r = a["resourceName"] as? String, r.range(of: "^people/[A-Za-z0-9_-]{1,160}$", options: .regularExpression) != nil, ["givenName", "familyName", "email", "phone", "organization"].contains(where: { a[$0] != nil }) else { throw Failure(message: "Provide a contact resourceName and fields to update.") } }
         }
     }
-    @MainActor func execute(owner: String, account: String, token: String, granted: Set<String>, operation: String, args: [String: Any], requestId: String, authorize: @escaping @MainActor () async throws -> Void) async throws -> [String: Any] {
+    @MainActor func execute(owner: String, account: String, token: String, granted: Set<String>, operation: String, args: [String: Any], requestId: String, senderEmail: String? = nil, authorize: @escaping @MainActor () async throws -> Void) async throws -> [String: Any] {
         guard !running.contains(owner) else { throw Failure(message: "A Google action is already running for this owner.") }
         running.insert(owner); defer { running.remove(owner) }
         try Self.validate(operation, args)
@@ -148,7 +149,7 @@ final class NativeGoogleActions {
             dispatched = true
         }
         do {
-            let value = try await perform(operation, args, token: token, authorize: authorize, beginWrite: beginWrite)
+            let value = try await perform(operation, args, token: token, senderEmail: senderEmail, authorize: authorize, beginWrite: beginWrite)
             try await authorize()
             guard try JSONSerialization.data(withJSONObject: value).count <= 23000 else { throw Failure(message: "Google result exceeded the saved action limit.") }
             let output: [String: Any] = ["requestId": requestId, "operation": operation, "status": "completed", "replayed": false, "result": value]
@@ -168,14 +169,14 @@ final class NativeGoogleActions {
     }
     private func url(_ base: String, _ query: [String: String] = [:]) -> URL { var c = URLComponents(string: base)!; c.queryItems = query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) }; return c.url! }
     private func component(_ s: String) -> String { s.addingPercentEncoding(withAllowedCharacters: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_.~")))! }
-    @MainActor private func perform(_ op: String, _ a: [String: Any], token: String, authorize: @escaping @MainActor () async throws -> Void, beginWrite: () throws -> Void) async throws -> [String: Any] {
+    @MainActor private func perform(_ op: String, _ a: [String: Any], token: String, senderEmail: String?, authorize: @escaping @MainActor () async throws -> Void, beginWrite: () throws -> Void) async throws -> [String: Any] {
         func send(_ address: URL, method: String = "GET", json: [String: Any]? = nil, data: Data? = nil, contentType: String? = nil, etag: String? = nil) async throws -> (Data, HTTPURLResponse) {
             try await authorize()
             guard address.scheme == "https", ["gmail.googleapis.com", "www.googleapis.com", "sheets.googleapis.com", "people.googleapis.com"].contains(address.host ?? ""), address.user == nil, address.password == nil else { throw Failure(message: "Unsupported Google endpoint.") }
             var r = URLRequest(url: address); r.httpMethod = method; r.timeoutInterval = 30; r.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
             if let json { r.httpBody = try JSONSerialization.data(withJSONObject: json); r.setValue("application/json", forHTTPHeaderField: "Content-Type") }
             if let data { r.httpBody = data; r.setValue(contentType, forHTTPHeaderField: "Content-Type") }
-            if let etag { guard !etag.contains("\r"), !etag.contains("\n"), etag.count <= 500 else { throw Failure(message: "Invalid resource version.") }; r.setValue(etag, forHTTPHeaderField: "If-Match") }
+            if let etag { guard !etag.unicodeScalars.contains(where: { $0.value == 10 || $0.value == 13 }), etag.count <= 500 else { throw Failure(message: "Invalid resource version.") }; r.setValue(etag, forHTTPHeaderField: "If-Match") }
             if method != "GET" { try beginWrite() }
             let (bytes, response) = try await session.bytes(for: r); defer { bytes.task.cancel() }
             guard let http = response as? HTTPURLResponse, response.expectedContentLength <= 2 * 1024 * 1024 else { throw Failure(message: "Google response exceeded the safe limit.") }
@@ -204,8 +205,11 @@ final class NativeGoogleActions {
         case "gmail.draft", "gmail.send":
             var headers = ["To: " + (try Self.emails(a, "to", required: true)).joined(separator: ", ")]
             for k in ["cc", "bcc"] { let e = try Self.emails(a, k); if !e.isEmpty { headers.append(k.capitalized + ": " + e.joined(separator: ", ")) } }
-            headers += ["Subject: =?UTF-8?B?" + Data((a["subject"] as! String).utf8).base64EncodedString() + "?=", "MIME-Version: 1.0", "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64"]
-            let message = headers.joined(separator: "\r\n") + "\r\n\r\n" + Data((a["body"] as! String).utf8).base64EncodedString(options: [.lineLength76Characters, .endLineWithCarriageReturn, .endLineWithLineFeed])
+            headers += ["Subject: " + NativeEmailSignature.encodedSubject(a["subject"] as! String), "MIME-Version: 1.0"]
+            let signature: NativeEmailSignature?
+            do { signature = try NativeEmailSignature.load(directory: signatureDirectory, senderEmail: senderEmail) }
+            catch { throw Failure(message: "The configured email signature could not be verified. Restore its approved private assets before sending; no email was sent.") }
+            let message = headers.joined(separator: "\r\n") + "\r\n" + NativeEmailSignature.mime(body: a["body"] as! String, signature: signature)
             var input: [String: Any] = ["raw": Data(message.utf8).base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")]; if let thread = a["threadId"] { input["threadId"] = thread }
             let r = try verified(await object(url(gmail + (op == "gmail.draft" ? "/drafts" : "/messages/send")), method: "POST", json: op == "gmail.draft" ? ["message": input] : input)); var result = selected(r, ["id", "threadId", "labelIds"]); if let message = r["message"] as? [String: Any] { result["message"] = selected(message, ["id", "threadId", "labelIds"]) }; return result
         case "gmail.modify":

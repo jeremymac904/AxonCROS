@@ -8,7 +8,8 @@ export interface Agent { id: string; name: string; avatarUrl: string | null; ava
 export async function api<T>(path: string, method = 'GET', body?: unknown, options: { agentMode?: boolean } = {}): Promise<T> {
   // The agent loop can span several model/action steps. This is a client wait
   // allowance, not permission to retry or extend an individual provider request.
-  const timeout = method === 'POST' && path.endsWith('/messages') ? (options.agentMode ? 1_230_000 : 340_000) : 30_000;
+  const discovery = method === 'POST' && /^\/local\/mcp\/connections\/(zapier|buffer)\/discover$/.test(path);
+  const timeout = discovery ? 75_000 : method === 'POST' && path.endsWith('/messages') ? (options.agentMode ? 1_230_000 : 340_000) : 30_000;
   try {
     const response = await fetch(`/api${path}`, { method, credentials: 'include', signal: AbortSignal.timeout(timeout),
       ...(method !== 'GET' ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body ?? {}) } : {}) });
@@ -18,6 +19,7 @@ export async function api<T>(path: string, method = 'GET', body?: unknown, optio
     return result as T;
   } catch (cause) {
     if (cause instanceof ApiError) throw cause;
+    if (cause instanceof Error && ['TimeoutError', 'AbortError'].includes(cause.name) && discovery) throw new Error('Discovery did not return in time. Refresh connection status before trying again; no app action was called or automatically retried.');
     if (cause instanceof Error && ['TimeoutError', 'AbortError'].includes(cause.name)) throw new Error('The connection timed out. The upstream reply may still finish; nothing was retried automatically. Your draft is preserved. Retry checks the same request.');
     throw new Error('AxonCROS couldn’t reach its local server. Your work is preserved. Reopen the app or try again.');
   }

@@ -8,6 +8,8 @@ final class NativeStore {
     private let service: String
     private let support: URL
     private let allowedFolderRoot: URL?
+    var emailSignatureDirectory: URL { support.appendingPathComponent("email-signature", isDirectory: true) }
+    var messagesCredentialService: String { service + ".messages" }
     var contactCredentialService: String { service + ".contacts" }
     init(support: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Bot HQ"),
          service: String = "local.bot-hq.desktop.AxonCROS", allowedFolderRoot: URL? = nil) {

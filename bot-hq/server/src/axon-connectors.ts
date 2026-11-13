@@ -7,7 +7,7 @@ import { Hono } from 'hono';
 import { db, now } from './db.js';
 import { env } from './env.js';
 import { requireUser, userFromCookieHeader, type AuthVars } from './lib/auth.js';
-type Provider='gmail'|'google-calendar'|'google-drive'|'google-sheets'|'google-contacts'|'plaid'|'spotify'|'withings'|'whatsapp';
+type Provider='gmail'|'google-calendar'|'google-drive'|'google-sheets'|'google-contacts'|'plaid'|'spotify'|'withings'|'whatsapp'|'zapier'|'buffer';
 type Credentials=Record<string,string>;
 type Connection={owner_id:string;provider:Provider;encrypted:string;verified_at:number|null;state:string;updated_at:number};
 class ConnectorError extends Error {constructor(message:string,readonly status:400|404|409|424|502=400){super(message);}}
@@ -39,6 +39,13 @@ function secureKey():Buffer {
 function encode(owner:string,id:Provider,data:Credentials){const nonce=crypto.randomBytes(12),cipher=crypto.createCipheriv('aes-256-gcm',secureKey(),nonce);cipher.setAAD(Buffer.from(owner+'\0'+id));const encrypted=Buffer.concat([cipher.update(JSON.stringify(data)),cipher.final()]);return JSON.stringify({iv:nonce.toString('base64'),tag:cipher.getAuthTag().toString('base64'),data:encrypted.toString('base64')});}
 function decode(owner:string,id:Provider):Credentials{const r=row(owner,id);if(!r)throw new ConnectorError('Configure this connector securely before reading.',424);try{const b=JSON.parse(r.encrypted),decipher=crypto.createDecipheriv('aes-256-gcm',secureKey(),Buffer.from(b.iv,'base64'));decipher.setAAD(Buffer.from(owner+'\0'+id));decipher.setAuthTag(Buffer.from(b.tag,'base64'));return JSON.parse(Buffer.concat([decipher.update(Buffer.from(b.data,'base64')),decipher.final()]).toString('utf8'));}catch{throw new ConnectorError('The local credential cannot be unlocked. Import it again securely.',424);}}
 function save(owner:string,id:Provider,data:Credentials,verified=false){db.prepare('INSERT INTO axon_connector_credentials VALUES(?,?,?,?,?,?) ON CONFLICT(owner_id,provider) DO UPDATE SET encrypted=excluded.encrypted,verified_at=excluded.verified_at,state=excluded.state,updated_at=excluded.updated_at').run(owner,id,encode(owner,id,data),verified?now():null,verified?'connected':'configured',now());}
+/** Internal-only vault interface. Zapier secrets never appear in the connector catalog. */
+export const mcpVault={
+ read:(owner:string,id:'zapier'|'buffer')=>decode(owner,id).connectionToken,
+ exists:(owner:string,id:'zapier'|'buffer')=>!!row(owner,id),
+ save:(owner:string,id:'zapier'|'buffer',connectionToken:string)=>save(owner,id,{connectionToken}),
+ remove:(owner:string,id:'zapier'|'buffer')=>db.prepare('DELETE FROM axon_connector_credentials WHERE owner_id=? AND provider=?').run(owner,id),
+};
 export function connectorCatalog(owner?:string){return definitions.map(def=>{const r=owner?row(owner,def.id):undefined;return {...def,status:r?.state??'not-configured',connected:r?.state==='connected',configured:!!r,lastCheckedAt:r?.verified_at??null,readOnly:!nativeIds.has(def.id),blocker:r?.state==='connected'?null:def.dependency,notice:nativeIds.has(def.id)?'Preview reads remain explicit. In agent mode, selected Google results may enter the configured model only with per-chat consent; action policy and saved execution receipts apply.':def.id==='plaid'?'Synthetic sandbox only. No live bank connection.':'Results stay in the explicit preview; they are not sent to an assistant.'};});}
 export function connectorStatus(owner:string,id:Provider){return connectorCatalog(owner).find(x=>x.id===id)!;}
 type Pending={owner:string;generation:number;session:string|undefined;state:string;verifier:string;clientId:string;redirectUri:string;server:http.Server;timer:NodeJS.Timeout;expiresAt:number};

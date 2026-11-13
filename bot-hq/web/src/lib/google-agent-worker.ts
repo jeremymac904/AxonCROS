@@ -3,6 +3,7 @@ export type GoogleExecutionPolicy = 'review-writes' | 'delegated';
 export interface GoogleAction {
   id: string; ownerId: string; chatId: string; profileId: string; requestId: string;
   operation: string; args: Record<string, unknown>; state: GoogleActionState;
+  executor?: 'native-google' | 'native-messages' | 'server-mcp';
   executionPolicy?: GoogleExecutionPolicy; createdAt: number; updatedAt: number;
   result?: Record<string, unknown> | null; error?: string | null;
 }
@@ -17,7 +18,7 @@ export interface GoogleWorkerIO {
 export function boundedGoogleResult(result: Record<string, unknown>): Record<string, unknown> {
   const encoded = new TextEncoder().encode(JSON.stringify(result));
   if (encoded.length <= 20_000) return result;
-  return { truncated: true, notice: 'Google completed the action. This saved preview is shortened to fit the local receipt; inspect the provider for the full result.', preview: new TextDecoder().decode(encoded.slice(0, 8_000)) };
+  return { truncated: true, notice: 'The provider completed the action. This saved preview is shortened to fit the local receipt; inspect the provider for the full result.', preview: new TextDecoder().decode(encoded.slice(0, 8_000)) };
 }
 // Retain a returned provider receipt across view remounts. Retry only saving that
 // exact receipt, never a native action. A full app exit leaves the server's
@@ -42,10 +43,10 @@ export class GoogleAgentWorker {
       }
       const actions = await this.io.pending();
       if (this.stopped) return;
-      const queued = actions.find(action => action.state === 'queued' && action.ownerId === this.ownerId);
+      const queued = actions.find(action => action.state === 'queued' && action.ownerId === this.ownerId && (action.executor === undefined || action.executor === 'native-google' || action.executor === 'native-messages') && action.operation !== 'mcp.call');
       if (!queued || !await this.ownsSession()) return;
       const action = await this.io.claim(queued.id);
-      if (action.id !== queued.id || action.ownerId !== this.ownerId || action.state !== 'running') throw new Error('The queued action changed owner or state. No Google request was made.');
+      if (action.id !== queued.id || action.operation !== queued.operation || action.executor !== queued.executor || action.ownerId !== this.ownerId || action.state !== 'running' || action.executor === 'server-mcp' || action.operation === 'mcp.call') throw new Error('The queued action changed owner or state. No native request was made.');
       if (!await this.ownsSession()) return;
       let receipt: GoogleActionReceipt;
       try {
@@ -53,13 +54,13 @@ export class GoogleAgentWorker {
         // the gap between the last HTTP check and the native request.
         const result = await this.io.execute(action);
         if (result.requestId !== action.id || result.operation !== action.operation) {
-          receipt = { status: 'uncertain', error: 'The native receipt did not match this action. Check Google before requesting it again.' };
+          receipt = { status: 'uncertain', error: 'The native receipt did not match this action. Check the provider before requesting it again.' };
         } else if (result.status === 'completed') receipt = { status: 'succeeded', result: boundedGoogleResult(result.result ?? {}) };
-        else if (result.status === 'failed') receipt = { status: 'failed', error: result.error || 'Google rejected the action before completion.' };
-        else receipt = { status: 'uncertain', error: result.error || 'Google did not confirm the result. Check the provider before requesting this action again.' };
+        else if (result.status === 'failed') receipt = { status: 'failed', error: result.error || 'The provider rejected the action before completion.' };
+        else receipt = { status: 'uncertain', error: result.error || 'The provider did not confirm the result. Check the provider before requesting this action again.' };
       } catch {
         // A bridge rejection is not proof that a remote write did not happen.
-        receipt = { status: 'uncertain', error: 'The Mac action returned no confirmed receipt. Check Google before requesting it again; it will not be repeated automatically.' };
+        receipt = { status: 'uncertain', error: 'The Mac action returned no confirmed receipt. Check the provider before requesting it again; it will not be repeated automatically.' };
       }
       receipts.set(action.id, { ownerId: this.ownerId, receipt });
       if (!await this.ownsSession()) return;

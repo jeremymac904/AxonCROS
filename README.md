@@ -1,6 +1,6 @@
 # AxonCROS — a local Mac workspace
 
-**Local source preview — 3.2.1.** This is an independently run Mac workspace with optional Google agent actions. External accounts require their owner’s authorization; mortgage borrower examples remain synthetic. Public binary signing/notarization and physical audio acceptance are not complete.
+**Local source preview — 3.3.0.** This is an independently run Mac workspace with optional Google, MCP and Mac Messages actions. External accounts require their owner’s authorization; mortgage borrower examples remain synthetic. Public binary signing/notarization and physical audio acceptance are not complete.
 
 AxonCROS is a free, open-source local application for chats, five draft mortgage assistants, research citations, files, contacts, tracking and marketing drafts. Each person runs their own copy on their own Mac. It is not a hosted borrower system or an automatically deployed team.
 
@@ -28,6 +28,8 @@ Read [local installation and release scope](docs/local-oss-release.md), [Google 
 - Native file selection, owner-scoped Keychain metadata, reviewed folder grants and optional on-device speech. OS permissions and hardware must be available.
 - External connectors require the user’s own configured provider access and explicit authorization. A catalogue entry or stored secret is not a verified connection. Provider terms, OAuth scopes and usage charges remain independent of this app’s source license.
 - Google agent mode can read and write Gmail, Calendar, Drive, Sheets and Contacts through the native Mac executor. Enable it per conversation with either exact-write review or delegated actions. Existing conversations retain text mode; action receipts survive failures and restarts. The Mac app must remain open for execution. Other connectors retain their documented capabilities.
+- Zapier and Buffer use their official remote MCP servers with native credential import, discovered schemas, per-tool policies and separate conversation consent. Buffer post creation stays in draft mode. Zapier calls can consume paid tasks; discovery alone does not prove access or authorize spending. See [MCP and Messages setup](docs/mcp-and-messages.md).
+- Mac iMessage sends require an existing Messages account, explicit Automation permission and separate chat consent. A local acceptance receipt is not proof of delivery. Incoming message history is not synchronized.
 
 The existing five-profile/local-data tests do not establish borrower-data authorization, remote tenant isolation, external sending or full cloud-computer capacity. Full-mode shared-filesystem and approval-bypass limitations remain unresolved. Do not connect real borrower records or claim all connectors are production-ready based on a local build.
 
@@ -45,6 +47,7 @@ node --import tsx server/scripts/axon-avatar-test.ts
 node --import tsx server/scripts/axon-connectors-test.ts
 node --import tsx server/scripts/local-model-test.ts
 node --import tsx server/scripts/axon-agent-actions-test.ts
+node --import tsx server/scripts/axon-mcp-test.ts
 node web/scripts/google-agent-worker-test.mjs
 cd ..
 python3 script/test_source_release.py

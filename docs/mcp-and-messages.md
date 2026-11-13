@@ -1,0 +1,37 @@
+# MCP and Mac Messages
+
+These are optional local connections. Installing the source does not connect an account, authorize a message, or purchase service usage. Existing Google grants and conversation permissions are separate.
+
+## Zapier and Buffer
+
+Open Settings → Connectors, then **Manage Buffer MCP** or **Manage Zapier MCP**.
+
+1. Use your existing provider account. For Zapier, use a separate managed server with only the actions you intend to enable. Buffer supports a personal API key for a locally run copy.
+2. Save the credential to a private local JSON file with one `connectionToken` property. Select it with **Choose existing credential JSON** in the Mac app. Never put credentials in chat or source control.
+3. Choose **Discover tools**. This initializes MCP and lists tools; it does not execute an app action. The app accepts only `https://mcp.zapier.com/api/v1/connect` and `https://mcp.buffer.com/mcp`. Custom URLs, redirects and command-based servers are not supported.
+4. Check your existing plan allowance before saving the allowance confirmation. Each successful Zapier app action, including reads, consumes two Zapier tasks. Keep pay-per-task overages disabled when using an included allowance. Buffer's free plan includes API/MCP access within its account limits. The app cannot verify your billing settings or remaining quota.
+5. Enable specific discovered tools. All begin disabled. Review requires the exact arguments to be approved; eligible delegated tools run only in a conversation where you explicitly enable that connection and model-context consent.
+
+Provider tokens stay in the owner's encrypted local vault. They are not returned to the renderer or model. Token rotation, schema changes, disconnecting or revoking permission invalidates pending work. A provider timeout may mean an action completed; uncertain results are never automatically retried. Check provider history before attempting it again.
+
+Buffer draft creation requires `saveToDraft: true` and exact review. Post editing, direct publishing, deletion and arbitrary GraphQL are blocked until a verified adapter can safely support them. Zapier administration, account provisioning and code execution are not exposed. External messaging tools require exact review. WhatsApp additionally needs a supported business account/action and its own provider allowance; seeing a Zapier tool does not prove WhatsApp access or free messaging.
+
+Enable MCP separately in a chat, select its allowed connections and acknowledge that retrieved results can enter the configured model. Only then request a specific synthetic test. Verify the saved provider receipt; a successful discovery is not a successful action.
+
+Official references: [Zapier connection methods](https://docs.zapier.com/mcp/overview/how-connections-work), [Zapier usage](https://docs.zapier.com/mcp/overview/usage), [Buffer MCP](https://developers.buffer.com/guides/integrations/mcp), [Buffer limits](https://developers.buffer.com/guides/api-limits.html), [WhatsApp pricing](https://whatsappbusiness.com/products/platform-pricing/).
+
+## iMessage on a Mac
+
+The signed-in Messages application must already be available. AxonCROS uses a fixed, validated iMessage operation; it does not run model-supplied scripts or read Messages history.
+
+Choose **Review Mac permission** to request the macOS Automation grant. Then enable Messages in a specific chat with context consent and either exact-write review or delegated actions. Each send requires a single explicit email address or international phone number and plain text. The durable receipt records acceptance by Messages, not delivery to the recipient. Check Messages for actual delivery. Unknown outcomes are not retried.
+
+The Mac app must remain open. Incoming synchronization, group messaging, SMS fallback and Full Disk Access are not part of this connector. No Messages permission is requested by installation or background status checks.
+
+## Private email signatures
+
+An optional signature package can live outside the checkout at `~/Library/Application Support/Bot HQ/email-signature`. The native sender validates its owner-only manifest, account match, file hashes and 12 inline CID image assets before building the MIME message. Model arguments remain plain text. A configured package that fails validation blocks sending before any network call. Personal signature assets and sender identity are never included in the public source.
+
+## Synthetic verification
+
+Run `node --import tsx server/scripts/axon-mcp-test.ts` from `bot-hq` and the native scripts `test_native_email_signature.sh` and `test_native_messages.sh` from the repository root under `mac-wrapper/script`. These use fake transports and temporary storage; they do not send email, iMessages, posts or paid MCP calls. Actual provider authorization and live receipts remain separate acceptance steps.

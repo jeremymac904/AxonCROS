@@ -122,6 +122,10 @@ final class WorkspaceFixtureProtocol: URLProtocol {
         let sanitized = try NativeConnectorCredentials.validated(["accessToken": "synthetic", "unrelatedSecret": "must-not-copy"], provider: "withings")
         check(sanitized.count == 1 && sanitized["unrelatedSecret"] == nil, "Native picker allowlists only necessary credential fields")
         check((try? NativeConnectorCredentials.validated(["accessToken": "synthetic", "phoneNumberId": "https://attacker.invalid"], provider: "whatsapp")) == nil, "WhatsApp phone identity rejects URL injection")
+        let zapier = try NativeConnectorCredentials.validated(["connectionToken": "synthetic-connection-token"], provider: "zapier")
+        check(zapier.count == 1 && zapier["connectionToken"] as? String == "synthetic-connection-token", "Zapier importer accepts only native connection token payload")
+        check((try? NativeConnectorCredentials.validated(["connectionToken": "synthetic", "url": "https://attacker.invalid"], provider: "zapier")) == nil, "Zapier importer rejects renderer-directed server URL")
+        check((try? NativeConnectorCredentials.validated(["connectionToken": "bad\r\nheader"], provider: "zapier")) == nil, "Zapier importer rejects header delimiters")
         // Public bridge action semantics, all through synthetic URLProtocol.
         WorkspaceFixtureProtocol.delay = 0
         storage.records.removeValue(forKey: owner + ":authorization")

@@ -6,7 +6,7 @@ import { AxonModal } from './AxonPrimitives';
 import '../styles/google-agent.css';
 
 interface WorkspaceAccount { name: string | null; state: 'checking' | 'not-connected' | 'authorized' | 'needs-consent' | 'unavailable' }
-export interface AgentModeChat { id: string; agentMode?: boolean; agentContextConsent?: boolean; executionPolicy?: GoogleExecutionPolicy }
+export interface AgentModeChat { id: string; agentMode?: boolean; agentContextConsent?: boolean; executionPolicy?: GoogleExecutionPolicy; mcpMode?: boolean; mcpContextConsent?: boolean; mcpConnectionIds?: string[]; messagesMode?: boolean; messagesContextConsent?: boolean; messagesExecutionPolicy?: GoogleExecutionPolicy }
 export function useGoogleAgentWorker(ownerId: string | null) {
   const [available, setAvailable] = useState(false), [error, setError] = useState(''), [revision, setRevision] = useState(0);
   const [account, setAccount] = useState<WorkspaceAccount>({ name: null, state: 'checking' });
@@ -26,7 +26,7 @@ export function useGoogleAgentWorker(ownerId: string | null) {
       owner: async () => (await api<{ user: { id: string } | null }>('/auth/me')).user?.id ?? null,
       pending: async () => (await api<{ actions: GoogleAction[] }>('/local/agent-actions/pending')).actions,
       claim: async id => (await api<{ action: GoogleAction }>(`/local/agent-actions/${id}/claim`, 'POST')).action,
-      execute: action => nativeRequest('executeGoogleAction', { operation: action.operation, args: action.args, requestId: action.id, expectedOwner: action.ownerId }),
+      execute: action => nativeRequest(action.executor === 'native-messages' ? 'executeMessagesAction' : 'executeGoogleAction', { operation: action.operation, args: action.args, requestId: action.id, expectedOwner: action.ownerId }),
       complete: (id, receipt) => api(`/local/agent-actions/${id}/complete`, 'POST', receipt),
     });
     const poll = async () => {
@@ -35,10 +35,11 @@ export function useGoogleAgentWorker(ownerId: string | null) {
       finally { if (active) timer = window.setTimeout(poll, 1500); }
     };
     setAvailable(false); setError(''); setAccount({ name: null, state: 'checking' });
-    void nativeRequest('googleActionCatalog', { scope: ownerId }).then(result => {
+    void Promise.allSettled([nativeRequest('googleActionCatalog', { scope: ownerId }), nativeRequest('messagesStatus', { scope: ownerId })]).then(results => {
+      const result = results[0].status === 'fulfilled' ? results[0].value : null;
       if (!active) return;
-      if (!result) throw new Error('Google action support is unavailable in this build.');
-      setAvailable(true); void checkAccount(); void poll();
+      if (!result && results[1].status === 'rejected') throw new Error('Native action support is unavailable in this build.');
+      setAvailable(!!result); void checkAccount(); void poll();
     }).catch(() => { if (active) { setAvailable(false); setAccount({ name: null, state: 'unavailable' }); } });
     return () => { active = false; worker.stop(); window.clearTimeout(timer); };
   }, [ownerId]);
@@ -70,7 +71,7 @@ export function GoogleAgentMode({ chat, ownerId, model, account, onRefreshAccoun
     finally { if (active.current) setSaving(false); }
   }
   return <div className="axon-agent-mode">
-    <div className="axon-agent-mode-row"><span><strong>{chat?.agentMode ? 'Google agent mode' : 'Text chat'}</strong><small>{chat?.agentMode ? chat.executionPolicy === 'delegated' ? 'Delegated Google actions · receipts saved' : 'Google reads · review each write' : 'Google actions are off in this conversation'}</small></span>
+    <div className="axon-agent-mode-row"><span><strong>{chat?.agentMode ? 'Google agent mode' : 'Google actions off'}</strong><small>{chat?.agentMode ? chat.executionPolicy === 'delegated' ? 'Delegated Google actions · receipts saved' : 'Google reads · review each write' : 'Google actions are off in this conversation'}</small></span>
       {chat?.agentMode && <button disabled={saving} onClick={() => void save(false)}>Pause agent</button>}
       <button disabled={disabled || saving} onClick={() => { setConsent(!!chat?.agentContextConsent); setPolicy(chat?.executionPolicy || 'review-writes'); setError(''); setOpen(true); void onRefreshAccount(); }}>{chat?.agentMode ? 'Permissions' : 'Enable agent mode'}</button>
     </div>
@@ -89,13 +90,13 @@ export function GoogleAgentMode({ chat, ownerId, model, account, onRefreshAccoun
   </div>;
 }
 
-const stateLabels: Record<string, string> = { review: 'Needs your review', queued: 'Queued for this Mac', running: 'Running on Google', succeeded: 'Completed', failed: 'Failed', uncertain: 'Outcome uncertain — check Google', cancelled: 'Cancelled' };
+const stateLabels: Record<string, string> = { review: 'Needs your review', queued: 'Queued', running: 'Running with provider', succeeded: 'Completed', failed: 'Failed', uncertain: 'Outcome uncertain — check provider', cancelled: 'Cancelled' };
 export function GoogleActionActivity({ chatId, revision, enabled, ownerId, account, onActivity }: { chatId: string | null; revision: number; enabled: boolean; ownerId: string; account: WorkspaceAccount; onActivity: (hint: string) => void }) {
   const [actions, setActions] = useState<GoogleAction[]>([]), [error, setError] = useState(''), [busy, setBusy] = useState<string | null>(null);
   const generation = useRef(0);
   const load = async (version: number) => {
     if (!chatId) return;
-    try { const result = await api<{ actions: GoogleAction[] }>(`/local/chats/${chatId}/agent-actions`); if (version === generation.current) { setActions(result.actions); setError(''); const reviews = result.actions.filter(action => action.state === 'review').length; onActivity(reviews ? `${reviews} action${reviews === 1 ? '' : 's'} need review` : result.actions.some(action => action.state === 'running') ? 'Google action running' : result.actions.some(action => action.state === 'queued') ? 'Google action queued' : result.actions.some(action => action.state === 'uncertain') ? 'An action has an uncertain outcome' : ''); } }
+    try { const result = await api<{ actions: GoogleAction[] }>(`/local/chats/${chatId}/agent-actions`); if (version === generation.current) { setActions(result.actions); setError(''); const reviews = result.actions.filter(action => action.state === 'review').length; onActivity(reviews ? `${reviews} action${reviews === 1 ? '' : 's'} need review` : result.actions.some(action => action.state === 'running') ? 'Provider action running' : result.actions.some(action => action.state === 'queued') ? 'Provider action queued' : result.actions.some(action => action.state === 'uncertain') ? 'An action has an uncertain outcome' : ''); } }
     catch (cause) { if (version === generation.current) setError(errorText(cause)); }
   };
   useEffect(() => { const version = ++generation.current; setActions([]); setError(''); setBusy(null); onActivity(''); void load(version); const timer = window.setInterval(() => void load(version), 2500); return () => { generation.current++; clearInterval(timer); }; }, [chatId, ownerId]);
@@ -107,5 +108,5 @@ export function GoogleActionActivity({ chatId, revision, enabled, ownerId, accou
     finally { if (version === generation.current) setBusy(null); }
   }
   if (!enabled && !actions.length && !error) return null;
-  return <section id="google-action-activity" tabIndex={-1} className="axon-google-activity" aria-label="Google action activity"><details open={actions.some(action => ['review', 'queued', 'running'].includes(action.state))}><summary>Google actions {actions.length ? `(${actions.length})` : ''}</summary><WorkspaceAccountLine account={account} />{error && <p className="axon-agent-error" role="alert">{error}<button onClick={() => void load(generation.current)}>Refresh actions</button></p>}{!actions.length && !error && <p>No Google action has been requested in this conversation.</p>}{actions.map(action => <article key={action.id} data-google-action={action.id} data-state={action.state}><div><strong>{action.operation}</strong><span className={`axon-google-state is-${action.state}`}>{stateLabels[action.state] || action.state}</span></div><small>{displayDate(action.createdAt)}</small><details open={action.state === 'review'}><summary>Exact arguments</summary><pre>{JSON.stringify(action.args, null, 2)}</pre></details>{action.error && <p className="axon-agent-error">{action.error}</p>}{action.result && <details><summary>Saved provider receipt</summary><pre>{JSON.stringify(action.result, null, 2)}</pre></details>}{action.state === 'review' && <div className="axon-actions"><button disabled={!!busy} onClick={() => void decide(action, false)}>Deny action</button><button className="axon-button axon-button--primary" disabled={!!busy || !enabled} onClick={() => void decide(action, true)}>Approve this exact action</button></div>}{action.state === 'uncertain' && <p>No automatic retry. Check the provider before requesting the action again.</p>}</article>)}</details></section>;
+  return <section id="google-action-activity" tabIndex={-1} className="axon-google-activity" aria-label="Connected action activity"><details open={actions.some(action => ['review', 'queued', 'running'].includes(action.state))}><summary>Connected actions {actions.length ? `(${actions.length})` : ''}</summary>{actions.some(action => !action.executor || action.executor === 'native-google') && <WorkspaceAccountLine account={account} />}{error && <p className="axon-agent-error" role="alert">{error}<button onClick={() => void load(generation.current)}>Refresh actions</button></p>}{!actions.length && !error && <p>No connected action has been requested in this conversation.</p>}{actions.map(action => <article key={action.id} data-google-action={action.id} data-state={action.state}><div><strong>{action.operation === 'mcp.call' ? `MCP ${String(action.args.connectionId || 'provider')} · ${String(action.args.toolName || 'tool')}` : action.operation}</strong><span className={`axon-google-state is-${action.state}`}>{stateLabels[action.state] || action.state}</span></div><small>{displayDate(action.createdAt)}{action.executor === 'server-mcp' ? ' · Remote MCP · provider allowance applies' : action.executor === 'native-messages' ? ' · Apple Messages · acceptance does not confirm delivery' : ' · Google Workspace'}</small><details open={action.state === 'review'}><summary>Exact arguments</summary><pre>{JSON.stringify(action.args, null, 2)}</pre></details>{action.error && <p className="axon-agent-error">{action.error}</p>}{action.result && <details><summary>Saved provider receipt</summary><pre>{JSON.stringify(action.result, null, 2)}</pre></details>}{action.state === 'review' && <div className="axon-actions"><button disabled={!!busy} onClick={() => void decide(action, false)}>Deny action</button><button className="axon-button axon-button--primary" disabled={!!busy || !enabled} onClick={() => void decide(action, true)}>Approve this exact action</button></div>}{action.state === 'uncertain' && <p>No automatic retry. Check the provider before requesting the action again.</p>}</article>)}</details></section>;
 }
