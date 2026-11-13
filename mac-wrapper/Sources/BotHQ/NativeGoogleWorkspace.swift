@@ -114,7 +114,9 @@ final class NativeGoogleWorkspace {
             if case Failure.message(let detail) = error { message = detail }
             else if let failure = error as? NativeGoogleActions.Failure { message = failure.message }
             else { message = "Google access is unavailable. Reconnect Workspace before retrying." }
-            return ["requestId": requestId, "operation": operation, "status": "failed", "replayed": false, "error": message + " No write was dispatched."]
+            var output: [String: Any] = ["requestId": requestId, "operation": operation, "status": "failed", "replayed": false, "error": message + " No write was dispatched."]
+            if let code = (error as? NativeGoogleActions.Failure)?.errorCode { output["errorCode"] = code }
+            return output
         }
     }
     @MainActor private func connect(_ scope: String, body: [String: Any], authorize: @escaping @MainActor () async throws -> Void) async throws -> [String: Any] {

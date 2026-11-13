@@ -7,12 +7,13 @@ export interface GoogleAction {
   executionPolicy?: GoogleExecutionPolicy; createdAt: number; updatedAt: number;
   result?: Record<string, unknown> | null; error?: string | null;
 }
-export interface GoogleActionReceipt { status: 'succeeded' | 'failed' | 'uncertain'; result?: Record<string, unknown>; error?: string }
+export type DriveFailureCode = 'drive_version_unavailable' | 'drive_version_changed' | 'drive_precondition_failed';
+export interface GoogleActionReceipt { status: 'succeeded' | 'failed' | 'uncertain'; result?: Record<string, unknown>; error?: string; errorCode?: DriveFailureCode }
 export interface GoogleWorkerIO {
   owner: () => Promise<string | null>;
   pending: () => Promise<GoogleAction[]>;
   claim: (id: string) => Promise<GoogleAction>;
-  execute: (action: GoogleAction) => Promise<{ status: string; requestId?: string; operation?: string; result?: Record<string, unknown>; error?: string }>;
+  execute: (action: GoogleAction) => Promise<{ status: string; requestId?: string; operation?: string; result?: Record<string, unknown>; error?: string; errorCode?: string }>;
   complete: (id: string, receipt: GoogleActionReceipt) => Promise<unknown>;
 }
 export function boundedGoogleResult(result: Record<string, unknown>): Record<string, unknown> {
@@ -56,7 +57,10 @@ export class GoogleAgentWorker {
         if (result.requestId !== action.id || result.operation !== action.operation) {
           receipt = { status: 'uncertain', error: 'The native receipt did not match this action. Check the provider before requesting it again.' };
         } else if (result.status === 'completed') receipt = { status: 'succeeded', result: boundedGoogleResult(result.result ?? {}) };
-        else if (result.status === 'failed') receipt = { status: 'failed', error: result.error || 'The provider rejected the action before completion.' };
+        else if (result.status === 'failed') {
+          const errorCode = ['drive.update', 'drive.trash'].includes(action.operation) && ['drive_version_unavailable', 'drive_version_changed', 'drive_precondition_failed'].includes(result.errorCode ?? '') ? result.errorCode as DriveFailureCode : undefined;
+          receipt = { status: 'failed', error: result.error || 'The provider rejected the action before completion.', ...(errorCode ? { errorCode } : {}) };
+        }
         else receipt = { status: 'uncertain', error: result.error || 'The provider did not confirm the result. Check the provider before requesting this action again.' };
       } catch {
         // A bridge rejection is not proof that a remote write did not happen.

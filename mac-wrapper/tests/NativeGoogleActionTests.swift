@@ -57,6 +57,9 @@ final class ActionFixtureProtocol: URLProtocol {
             }
             if path.contains("/drive/") {
                 if request.url!.query?.contains("alt=media") == true || path.hasSuffix("/export") { return (200, Data("Synthetic file content".utf8), [:]) }
+                if path.contains("/drive/v2/") {
+                    return json(["id":"file1","title":"Synthetic file","mimeType":"text/plain","modifiedDate":"2026-11-13T10:00:00Z","parents":[["id":"parent1"]],"labels":["trashed":method == "PATCH"],"etag":"\"version1\""], etag:false)
+                }
                 let file: [String: Any] = ["id": "file1", "name": "Synthetic file", "mimeType": "text/plain", "modifiedTime": "2026-11-13T10:00:00Z", "parents": ["parent1"], "trashed": false]
                 return path.hasSuffix("/files") && method == "GET" ? json(["kind": "drive#fileList", "files": [file]]) : json(file)
             }
@@ -106,7 +109,7 @@ final class ActionFixtureProtocol: URLProtocol {
         check((contactBody["emailAddresses"] as? [[String: Any]])?[1]["value"] as? String == "secondary@example.invalid" && (contactBody["names"] as? [[String: Any]])?.first?["middleName"] as? String == "Preserve", "Contact edit retains unrelated name and secondary values")
         check(((contactBody["metadata"] as? [String: Any])?["sources"] as? [[String: Any]])?.first?["etag"] as? String == "source-etag", "Contact mutation carries exact current CONTACT source etag")
         check(ActionFixtureProtocol.requests.filter { $0.url!.path.contains("/values/") && $0.httpMethod != "GET" }.allSatisfy { $0.url!.query!.contains("valueInputOption=RAW") }, "Sheets never evaluates supplied formulas")
-        check(ActionFixtureProtocol.requests.filter { $0.httpMethod == "PATCH" && $0.url!.path.contains("/drive/") }.allSatisfy { $0.value(forHTTPHeaderField: "If-Match") == "\"version1\"" }, "Drive mutations bind exact provider version")
+        check(ActionFixtureProtocol.requests.filter { ["PATCH","PUT"].contains($0.httpMethod ?? "") && $0.url!.path.contains("/drive/") }.allSatisfy { $0.value(forHTTPHeaderField: "If-Match") == "\"version1\"" }, "Drive mutations bind exact provider version")
         check(ActionFixtureProtocol.requests.allSatisfy { $0.httpMethod != "DELETE" && $0.value(forHTTPHeaderField: "Authorization") == "Bearer " + fakeToken }, "No permanent deletes or renderer-token requests")
         let send = samples[3], replayID = UUID().uuidString
         _ = try await run(send.0, send.1, replayID); let count = ActionFixtureProtocol.requests.count
@@ -141,15 +144,53 @@ final class ActionFixtureProtocol: URLProtocol {
             let args: [String: Any] = op == "sheets.read" ? ["spreadsheetId": "sheet1", "range": "A1:B2"] : [:]
             do { _ = try await run(op, args); fatalError("Malformed provider accepted") } catch { check(true, "Malformed \(op) response fails closed") }
         }
-        ActionFixtureProtocol.response = { r in let result = fixture(r); return (result.0, result.1, ["Content-Type": "application/json"]) }
+        ActionFixtureProtocol.response = { r in
+            let result = fixture(r); var value = try! JSONSerialization.jsonObject(with: result.1) as! [String:Any]
+            value.removeValue(forKey:"etag"); return json(value,etag:false)
+        }
         let beforeMissingVersion = ActionFixtureProtocol.requests.count
         do { _ = try await run("drive.trash", ["id": "file1"]); fatalError("Missing Drive version") } catch { check(ActionFixtureProtocol.requests.count == beforeMissingVersion + 1 && ActionFixtureProtocol.requests.last?.httpMethod == "GET", "Drive without ETag cannot mutate") }
+        ActionFixtureProtocol.response = fixture
+        let metadataStart = ActionFixtureProtocol.requests.count
+        let mapped = try await run("drive.update", ["id":"file1","name":"Renamed","addParentId":"parent2","removeParentId":"parent1","expectedModifiedTime":"2026-11-13T10:00:00.000Z"])
+        let metadataRequest = ActionFixtureProtocol.requests.last!, metadataBody = try JSONSerialization.jsonObject(with: ActionFixtureProtocol.bodies.last!) as! [String:Any]
+        let mappedResult = mapped["result"] as! [String:Any]
+        check(ActionFixtureProtocol.requests.count == metadataStart+2 && ActionFixtureProtocol.requests[metadataStart].url!.path == "/drive/v2/files/file1", "Drive writes use one v2 snapshot with JSON ETag and no HTTP ETag")
+        check(metadataRequest.httpMethod == "PATCH" && metadataBody["title"] as? String == "Renamed" && metadataBody["name"] == nil && metadataRequest.url!.query!.contains("addParents=parent2") && metadataRequest.url!.query!.contains("removeParents=parent1"), "Drive metadata uses v2 title and explicit parent deltas")
+        check(mappedResult["name"] as? String == "Synthetic file" && mappedResult["modifiedTime"] as? String == "2026-11-13T10:00:00Z" && mappedResult["parents"] as? [String] == ["parent1"] && mappedResult["etag"] == nil, "Drive v2 response normalized to existing bounded result contract")
+        _ = try await run("drive.update",["id":"file1","name":"Content file","content":"Synthetic replacement"])
+        let media = ActionFixtureProtocol.requests.last!, mediaBody=String(decoding:ActionFixtureProtocol.bodies.last!,as:UTF8.self)
+        check(media.httpMethod == "PUT" && media.url!.path == "/upload/drive/v2/files/file1" && media.value(forHTTPHeaderField:"If-Match") == "\"version1\"" && mediaBody.contains("Synthetic replacement") && mediaBody.contains("title"), "Drive content uses documented v2 PUT multipart with exact conditional version")
+        _ = try await run("drive.trash",["id":"file1"])
+        let trashBody=try JSONSerialization.jsonObject(with:ActionFixtureProtocol.bodies.last!) as! [String:Any]
+        check((trashBody["labels"] as? [String:Any])?["trashed"] as? Bool == true && trashBody.count == 1 && ActionFixtureProtocol.requests.last!.httpMethod == "PATCH", "Drive trash changes only v2 labels.trashed without permanent deletion")
+        let staleStart=ActionFixtureProtocol.requests.count
+        do { _ = try await run("drive.update",["id":"file1","name":"Stale","expectedModifiedTime":"2026-11-12T10:00:00Z"]); fatalError("Stale metadata wrote") }
+        catch { check((error as? NativeGoogleActions.Failure)?.errorCode == "drive_version_changed" && ActionFixtureProtocol.requests.count == staleStart+1, "Stale expected timestamp fails with safe code before mutation") }
+        for invalidTag in ["*","W/\"weak\"","\"bad\r\nheader\"",""] {
+            ActionFixtureProtocol.response = { r in var value = try! JSONSerialization.jsonObject(with:fixture(r).1) as! [String:Any];value["etag"]=invalidTag; return json(value,etag:false) }
+            let before=ActionFixtureProtocol.requests.count
+            do { _ = try await run("drive.trash",["id":"file1"]);fatalError("Unsafe ETag wrote") }
+            catch {check((error as? NativeGoogleActions.Failure)?.errorCode == "drive_version_unavailable" && ActionFixtureProtocol.requests.count == before+1,"Unsafe Drive ETag fails before mutation")}
+        }
+        ActionFixtureProtocol.response = { r in r.httpMethod == "GET" ? fixture(r) : json(["error":fakeToken],status:412) }
+        let conflictID=UUID().uuidString, conflictArgs:[String:Any]=["id":"file1","name":"Conflicting"]
+        let conflict=try await run("drive.update",conflictArgs,conflictID), conflictCount=ActionFixtureProtocol.requests.count
+        let conflictReplay=try await run("drive.update",conflictArgs,conflictID)
+        check(conflict["status"] as? String == "failed" && conflict["errorCode"] as? String == "drive_precondition_failed" && !(conflict["error"] as! String).contains(fakeToken),"Drive412 produces static actionable conflict receipt without provider payload")
+        check(conflictReplay["replayed"] as? Bool == true && ActionFixtureProtocol.requests.count == conflictCount,"Rejected Drive version is not automatically retried or replayed")
         ActionFixtureProtocol.response = fixture; ActionFixtureProtocol.delay = 0.1
         var valid = true
         let beforeRetirement = ActionFixtureProtocol.requests.count
         let retired = Task { @MainActor in try await run("contacts.update", ["resourceName": "people/person1", "givenName": "Retired"], authorize: { if !valid { throw NSError(domain: "owner-retired", code: 401) } }) }
         try await Task.sleep(nanoseconds: 20_000_000); valid = false
         do { _ = try await retired.value; fatalError("Retired owner wrote") } catch { check(ActionFixtureProtocol.requests.count == beforeRetirement + 1 && ActionFixtureProtocol.requests.last?.httpMethod == "GET", "Owner retirement after preflight prevents contact write") }
+        valid = true
+        let beforeDriveRetirement = ActionFixtureProtocol.requests.count
+        let retiredDrive = Task { @MainActor in try await run("drive.update",["id":"file1","content":"Must not write"],authorize:{ if !valid {throw NSError(domain:"owner-retired",code:401)} }) }
+        try await Task.sleep(nanoseconds:20_000_000); valid=false
+        do {_ = try await retiredDrive.value;fatalError("Retired owner changed Drive")}
+        catch {check(ActionFixtureProtocol.requests.count == beforeDriveRetirement+1 && ActionFixtureProtocol.requests.last!.httpMethod == "GET", "Owner retirement after Drive snapshot blocks conditional media dispatch")}
         let first = Task { @MainActor in try await run("gmail.search", [:]) }; try await Task.sleep(nanoseconds: 20_000_000)
         let serializationCount = ActionFixtureProtocol.requests.count
         do { _ = try await run(send.0, send.1); fatalError("Concurrent write") } catch { check(ActionFixtureProtocol.requests.count == serializationCount, "Per-owner execution serializes while first request awaits") }; _ = try await first.value

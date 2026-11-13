@@ -68,6 +68,22 @@ try{
  const pause=await chat('delegated');planned=[{type:'action',operation:'drive.create',args:{name:'Synthetic',content:'synthetic'}}];const pt=send(pause),pa=await waitAction(pause.id);await api(`/api/local/chats/${pause.id}/agent-mode`,'PATCH',{enabled:false,contextConsent:false,executionPolicy:'delegated'});assert.equal((await pt).status,409);assert.equal((await api(`/api/local/agent-actions/${pa.id}/claim`,'POST',{})).status,409);
  const late=await chat('delegated');planned=[{type:'action',operation:'drive.create',args:{name:'Late receipt'}}];const lt=send(late),la=await waitAction(late.id);assert.equal((await api(`/api/local/agent-actions/${la.id}/claim`,'POST',{})).status,200);await api(`/api/local/chats/${late.id}/cancel`,'POST',{});assert.equal((await lt).status,409);assert.equal((await api(`/api/local/agent-actions/${la.id}/execution`)).status,409);assert.equal((await api(`/api/local/agent-actions/${la.id}/complete`,'POST',{status:'succeeded',result:{id:'late-synthetic-id'}})).status,200);assert.equal((await api(`/api/local/agent-actions/${la.id}/claim`,'POST',{})).status,409);
  console.log('PASS unknown outcome stops loop with durable receipt; sanitized failures; Pause/Stop prevent dispatch; late receipt recorded without re-execution');
+ for(const [operation,status,errorCode,expected] of [
+  ['drive.update','failed','drive_version_unavailable','usable file version'],
+  ['drive.update','failed','drive_version_changed','changed since the selected version'],
+  ['drive.trash','failed','drive_precondition_failed','version no longer matched'],
+  ['sheets.create','failed','drive_version_changed','Native action failed'],
+  ['drive.update','failed','constructor','Native action failed'],
+  ['drive.update','failed','unknown_provider_secret','Native action failed'],
+  ['drive.update','uncertain','drive_version_changed','Provider outcome is unknown'],
+ ]){
+  const ch=await chat('delegated');planned=[{type:'action',operation,args:operation==='sheets.create'?{title:'Synthetic failure'}:operation==='drive.trash'?{id:'synthetic'}:{id:'synthetic',content:'Synthetic update'}}];
+  const task=send(ch),a=await waitAction(ch.id);assert.equal((await api(`/api/local/agent-actions/${a.id}/claim`,'POST',{})).status,200);
+  const body={status,errorCode,error:'SYNTHETIC_PRIVATE_PROVIDER_ERROR'};
+  const r=await api(`/api/local/agent-actions/${a.id}/complete`,'POST',body);assert.equal(r.status,200);assert.match(r.data.action.error,new RegExp(expected));assert.ok(!JSON.stringify(r.data).includes('SYNTHETIC_PRIVATE'));assert.equal((await api(`/api/local/agent-actions/${a.id}/complete`,'POST',body)).status,200);
+  assert.equal((await task).status,200);const saved=(await api(`/api/local/chats/${ch.id}/agent-actions`)).data.actions;assert.equal(saved[0].error,r.data.action.error);assert.equal(saved.length,1);assert.equal((await api(`/api/local/agent-actions/${a.id}/claim`,'POST',{})).status,409);
+ }
+ console.log('PASS static Drive failure codes persist useful version/conflict guidance; wrong operation/unknown codes remain generic; uncertain stays unknown; raw errors excluded; replay safe');
  for(const output of [{type:'action',operation:'gmail.send',args:{to:Array(21).fill('synthetic@example.invalid'),subject:'Synthetic',body:'No send'}},{type:'action',operation:'drive.read',args:{id:'a'.repeat(201)}},{type:'action',operation:'shell.exec',args:{command:'no'}},{type:'action',operation:'drive.read',args:{id:'x',url:'https://evil.invalid'}},{type:'action',operation:'sheets.write',args:{spreadsheetId:'x',range:'A1',values:[Array(501).fill('x')]}},'not valid JSON']){const ch=await chat('delegated');planned=[output];assert.ok([400,409].includes((await send(ch)).status));assert.equal((await api(`/api/local/chats/${ch.id}/agent-actions`)).data.actions.length,0)}
  const repeat=await chat('delegated'),same={type:'action',operation:'sheets.create',args:{title:'No duplicate'}};planned=[same,same,{type:'final',text:'One result.'}];const rt=send(repeat),ra=await waitAction(repeat.id);await finish(ra);assert.equal((await rt).status,200);assert.equal((await api(`/api/local/chats/${repeat.id}/agent-actions`)).data.actions.length,1);
  console.log('PASS unsupported operations/unknown arguments/oversized cells/malformed protocol rejected; repeated model action reused receipt, no duplicate execution');

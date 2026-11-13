@@ -52,8 +52,27 @@ final class MessagesMemory: ContactCredentialStorage {
         let injection = "\"\nend tell\ndo shell script \"unsafe\"\\tail"
         let literal = NativeMessages.literal(injection)
         check(!literal.contains("\n") && literal.contains("\\\"") && literal.contains("\\\\tail"), "AppleScript input is one escaped literal without source line injection")
-        let fixed = NativeMessages.script(recipient:"synthetic@example.invalid",text:injection)
+        let fixed = try NativeMessages.script(recipient:"synthetic@example.invalid",text:injection,bundleIdentifier:"com.apple.MobileSMS")
         check(fixed.contains("first service whose service type is iMessage") && fixed.contains("with timeout of 20 seconds") && !fixed.contains("chat.db"), "Fixed script uses only iMessage and bounded AppleEvent timeout")
+        let modern = URL(fileURLWithPath: "/synthetic/modern.app"), legacy = URL(fileURLWithPath: "/synthetic/legacy.app")
+        func identity(_ url: URL) -> String? { url == modern ? "com.apple.MobileSMS" : url == legacy ? "com.apple.iChat" : nil }
+        check(NativeMessages.resolveBundleIdentifier(lookup: { $0 == "com.apple.MobileSMS" ? modern : legacy }, identity: identity) == "com.apple.MobileSMS", "Modern Messages identity takes priority when both identities exist")
+        check(NativeMessages.resolveBundleIdentifier(lookup: { $0 == "com.apple.iChat" ? legacy : nil }, identity: identity) == "com.apple.iChat", "Legacy Messages identity remains a supported fallback")
+        check(NativeMessages.resolveBundleIdentifier(lookup: { _ in modern }, identity: { _ in "untrusted.other.app" }) == nil, "Mismatched installed identity fails closed")
+        check(NativeMessages.resolveBundleIdentifier(lookup: { _ in nil }, identity: identity) == nil, "Absent Messages app remains unavailable without launch")
+        for id in NativeMessages.supportedBundleIdentifiers {
+            let source = try NativeMessages.script(recipient:"synthetic@example.invalid",text:"Synthetic only",bundleIdentifier:id)
+            check(source.contains("tell application id \"" + id + "\"") && source.contains("service type is iMessage") && !source.contains("service type is SMS"), "Fixed script binds supported identity without SMS fallback: " + id)
+        }
+        check((try? NativeMessages.script(recipient:"synthetic@example.invalid",text:"x",bundleIdentifier:"com.apple.finder")) == nil, "Arbitrary app identity rejected before script execution")
+        check(NativeMessages.checkPermission(false,bundleIdentifier:"com.apple.finder") == -600, "Arbitrary consent target rejected before any AppleEvent permission check")
+        let installedURL = URL(fileURLWithPath:"/System/Applications/Messages.app")
+        if let installed = Bundle(url:installedURL)?.bundleIdentifier {
+            check(NativeMessages.supportedBundleIdentifiers.contains(installed), "Actual on-disk Messages identity is supported")
+            check(NativeMessages.resolveBundleIdentifier() == installed && client.applicationBundleIdentifier == installed, "Actual LaunchServices resolution and captured client identity match installed Messages")
+            let dictionary = try String(contentsOf:installedURL.appendingPathComponent("Contents/Resources/Messages.sdef"),encoding:.utf8)
+            check(dictionary.contains("name=\"send\"") && dictionary.contains("name=\"iMessage\"") && dictionary.contains("name=\"service\"") && dictionary.contains("name=\"buddy\""), "Actual Messages scripting dictionary supports fixed send and service/buddy aliases")
+        }
         print(String(data: try JSONSerialization.data(withJSONObject:["passed":true,"checks":checks,"checkCount":checks.count,"realAppleEvents":0,"realMessages":0,"realPermissions":0],options:[.prettyPrinted,.sortedKeys]),encoding:.utf8)!)
     }
 }

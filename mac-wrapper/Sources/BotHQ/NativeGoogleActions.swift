@@ -6,7 +6,7 @@ import PDFKit
 /// Typed native executor. No renderer-provided URL, HTTP verb, token or raw MIME.
 /// Receipts share the existing private Workspace Keychain service, never JS secrets.
 final class NativeGoogleActions {
-    struct Failure: LocalizedError { let message: String; var errorDescription: String? { message } }
+    struct Failure: LocalizedError { let message: String; var errorCode: String? = nil; var errorDescription: String? { message } }
     struct HTTPFailure: Error { let status: Int }
     private let storage: ContactCredentialStorage
     private let session: URLSession
@@ -157,7 +157,9 @@ final class NativeGoogleActions {
         } catch {
             if dispatched {
                 let rejected = (error as? HTTPFailure).map { (400...499).contains($0.status) && ![408, 499].contains($0.status) } ?? false
-                let output: [String: Any] = ["requestId": requestId, "operation": operation, "status": rejected ? "failed" : "unknown", "replayed": false, "error": rejected ? "Google rejected this action. Review permissions or resource state before a new request." : "The action may have reached Google. Nothing was retried. Review the provider before attempting it with a new request ID."]
+                let conflict = operation.hasPrefix("drive.") && (error as? HTTPFailure)?.status == 412
+                var output: [String: Any] = ["requestId": requestId, "operation": operation, "status": rejected ? "failed" : "unknown", "replayed": false, "error": conflict ? "Drive rejected a changed file version. Read the file again before a new update; nothing was retried." : rejected ? "Google rejected this action. Review permissions or resource state before a new request." : "The action may have reached Google. Nothing was retried. Review the provider before attempting it with a new request ID."]
+                if conflict { output["errorCode"] = "drive_precondition_failed" }
                 // A retired session cannot overwrite receipts; pending remains an
                 // unknown outcome and prevents replay after restart.
                 if (try? await authorize()) != nil { try? storage.write(owner, key, ["hash": hash, "operation": operation, "state": output["status"]!, "output": output]) }
@@ -226,9 +228,10 @@ final class NativeGoogleActions {
         case "drive.list":
             let r = try await object(url(drive,["pageSize":String(n),"q":a["query"] as? String ?? "trashed = false","fields":"kind,files(id,name,mimeType,modifiedTime,parents,trashed),nextPageToken"])); guard r["kind"] as? String == "drive#fileList", r["files"] == nil || r["files"] is [[String: Any]] else { throw Failure(message: "Drive returned malformed list data.") }; return ["items":Array((r["files"] as? [[String:Any]] ?? []).prefix(n)).map { selected($0,["id","name","mimeType","modifiedTime","parents","trashed"]) }]
         case "drive.read", "drive.update", "drive.trash":
-            let id = try Self.id(a,"id"), address = drive + "/" + id
-            let previous = try verified(await object(url(address,["fields":"id,name,mimeType,modifiedTime,parents,trashed,size"])),"id",id)
+            let id = try Self.id(a,"id")
             if op == "drive.read" {
+                let address = drive + "/" + id
+                let previous = try verified(await object(url(address,["fields":"id,name,mimeType,modifiedTime,parents,trashed,size"])),"id",id)
                 var out = selected(previous,["id","name","mimeType","modifiedTime","parents","trashed"]); let mime = previous["mimeType"] as? String ?? ""
                 if mime == "application/vnd.google-apps.folder" { return out }
                 let googleDoc = mime == "application/vnd.google-apps.document"
@@ -238,13 +241,44 @@ final class NativeGoogleActions {
                 if mime == "application/pdf", let pdf=PDFDocument(data:d) { text=(0..<min(pdf.pageCount,20)).compactMap { pdf.page(at:$0)?.string }.joined(separator:"\n") } else { text=String(data:d,encoding:.utf8) }
                 guard let text else { throw Failure(message:"The file did not contain supported readable text.") }; out["text"]=String(text.prefix(12000)); out["truncated"]=text.count>12000; return out
             }
-            guard let currentETag = previous["_etag"] as? String, !currentETag.isEmpty else { throw Failure(message: "Drive did not return a safe resource version. No file was changed.") }
-            if let expected=a["expectedModifiedTime"] as? String, expected != previous["modifiedTime"] as? String { throw Failure(message:"File changed; read it again before updating.") }
-            if op == "drive.trash" { let r=try verified(await object(url(address,["fields":"id,name,trashed,modifiedTime"]),method:"PATCH",json:["trashed":true],etag:currentETag),"id",id);return selected(r,["id","name","trashed","modifiedTime"]) }
-            var q=["fields":"id,name,mimeType,modifiedTime,parents"];if let p=a["addParentId"] as? String{q["addParents"]=p};if let p=a["removeParentId"] as? String{q["removeParents"]=p}
-            let metadata=selected(a,["name"])
-            if let content=a["content"] as? String { let mime=previous["mimeType"] as? String ?? "";guard ["text/plain","text/markdown","text/csv","application/json"].contains(mime) else {throw Failure(message:"Updating bytes is supported only for text, Markdown, CSV or JSON files.")};let multipart=Self.multipart(metadata,content,mime);q["uploadType"]="multipart";let r=try verified(await object(url("https://www.googleapis.com/upload/drive/v3/files/"+id,q),method:"PATCH",data:multipart.0,contentType:multipart.1,etag:currentETag),"id",id);return selected(r,["id","name","mimeType","modifiedTime","parents"]) }
-            let r=try verified(await object(url(address,q),method:"PATCH",json:metadata,etag:currentETag),"id",id);return selected(r,["id","name","mimeType","modifiedTime","parents"])
+            // v3 omits the resource ETag. Use a single v2 snapshot for both
+            // version and metadata, then send its exact ETag on every mutation.
+            // Never fall back to an unconditional write when version data is absent.
+            let address = "https://www.googleapis.com/drive/v2/files/" + id
+            let fields = "id,title,mimeType,modifiedDate,parents(id),labels(trashed),etag"
+            let previous = try verified(await object(url(address,["fields":fields])),"id",id)
+            guard let currentETag = previous["etag"] as? String,
+                  currentETag.count >= 2, currentETag.count <= 500,
+                  currentETag.first == "\"", currentETag.last == "\"",
+                  !currentETag.dropFirst().dropLast().unicodeScalars.contains(where: { $0.value < 33 || $0.value == 34 || $0.value == 127 })
+            else { throw Failure(message: "Drive did not return a safe resource version. No file was changed.", errorCode: "drive_version_unavailable") }
+            if let expected=a["expectedModifiedTime"] as? String {
+                guard let actual=previous["modifiedDate"] as? String,
+                      expected == actual || (Self.date(expected) != nil && Self.date(expected) == Self.date(actual))
+                else { throw Failure(message:"File changed; read it again before updating.", errorCode: "drive_version_changed") }
+            }
+            func normalized(_ r: [String:Any]) -> [String:Any] {
+                var out=selected(r,["id","mimeType"])
+                out["name"]=r["title"]; out["modifiedTime"]=r["modifiedDate"]
+                if let parents=r["parents"] as? [[String:Any]] { out["parents"]=parents.compactMap { $0["id"] as? String } }
+                if let labels=r["labels"] as? [String:Any], let trashed=labels["trashed"] as? Bool { out["trashed"]=trashed }
+                return out
+            }
+            if op == "drive.trash" {
+                let r=try verified(await object(url(address,["fields":fields]),method:"PATCH",json:["labels":["trashed":true]],etag:currentETag),"id",id)
+                return normalized(r)
+            }
+            var q=["fields":fields]; if let p=a["addParentId"] as? String {q["addParents"]=p}; if let p=a["removeParentId"] as? String {q["removeParents"]=p}
+            var metadata:[String:Any]=[:]; if let name=a["name"] {metadata["title"]=name}
+            if let content=a["content"] as? String {
+                let mime=previous["mimeType"] as? String ?? ""
+                guard ["text/plain","text/markdown","text/csv","application/json"].contains(mime) else {throw Failure(message:"Updating bytes is supported only for text, Markdown, CSV or JSON files.")}
+                let multipart=Self.multipart(metadata,content,mime); q["uploadType"]="multipart"
+                let r=try verified(await object(url("https://www.googleapis.com/upload/drive/v2/files/"+id,q),method:"PUT",data:multipart.0,contentType:multipart.1,etag:currentETag),"id",id)
+                return normalized(r)
+            }
+            let r=try verified(await object(url(address,q),method:"PATCH",json:metadata,etag:currentETag),"id",id)
+            return normalized(r)
         case "drive.create":
             let mime=a["mimeType"] as? String ?? "text/plain";var meta:[String:Any]=["name":a["name"]!,"mimeType":mime];if let p=a["parentId"]{meta["parents"]=[p]}
             let r:[String:Any]

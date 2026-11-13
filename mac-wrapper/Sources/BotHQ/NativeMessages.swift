@@ -6,6 +6,19 @@ import CryptoKit
 /// private journal. No chat.db, Full Disk Access, shell, attachments or SMS fallback.
 final class NativeMessages {
     struct Failure: LocalizedError { let text: String; var errorDescription: String? { text } }
+    static let supportedBundleIdentifiers = ["com.apple.MobileSMS", "com.apple.iChat"]
+    /// Resolve once per native client, so availability, consent and sending target
+    /// the same installed Messages application. No application is launched here.
+    static func resolveBundleIdentifier(
+        lookup: (String) -> URL? = { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) },
+        identity: (URL) -> String? = { Bundle(url: $0)?.bundleIdentifier }
+    ) -> String? {
+        supportedBundleIdentifiers.first { id in
+            guard let url = lookup(id) else { return false }
+            return identity(url) == id
+        }
+    }
+    let applicationBundleIdentifier: String?
     private let storage: ContactCredentialStorage
     private let permission: (Bool) -> OSStatus
     private let available: () -> Bool
@@ -16,12 +29,20 @@ final class NativeMessages {
          permission: ((Bool) -> OSStatus)? = nil, available: (() -> Bool)? = nil,
          sender: ((String, String) async throws -> Void)? = nil) {
         self.storage = storage ?? ContactSecrets(service: service)
-        self.permission = permission ?? Self.checkPermission
-        self.available = available ?? { NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.iChat") != nil }
-        self.sender = sender ?? Self.sendFixedScript
+        let bundleID = Self.resolveBundleIdentifier()
+        self.applicationBundleIdentifier = bundleID
+        self.permission = permission ?? { ask in
+            guard let bundleID else { return OSStatus(-600) }
+            return Self.checkPermission(ask, bundleIdentifier: bundleID)
+        }
+        self.available = available ?? { bundleID != nil }
+        self.sender = sender ?? { recipient, text in
+            guard let bundleID else { throw Failure(text: "The supported Messages app is unavailable.") }
+            try await Self.sendFixedScript(recipient, text, bundleIdentifier: bundleID)
+        }
     }
-    static func checkPermission(_ ask: Bool) -> OSStatus {
-        let id = "com.apple.iChat"
+    static func checkPermission(_ ask: Bool, bundleIdentifier id: String) -> OSStatus {
+        guard supportedBundleIdentifiers.contains(id) else { return OSStatus(-600) }
         var target = AEAddressDesc()
         let result = id.withCString { AECreateDesc(DescType(typeApplicationBundleID), $0, id.utf8.count, &target) }
         guard result == noErr else { return OSStatus(result) }; defer { AEDisposeDesc(&target) }
@@ -99,10 +120,11 @@ final class NativeMessages {
         "\"" + text.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
             .replacingOccurrences(of: "\r", with: "\\r").replacingOccurrences(of: "\n", with: "\\n").replacingOccurrences(of: "\t", with: "\\t") + "\""
     }
-    static func script(recipient: String, text: String) -> String {
-        """
+    static func script(recipient: String, text: String, bundleIdentifier: String) throws -> String {
+        guard supportedBundleIdentifiers.contains(bundleIdentifier) else { throw Failure(text: "Unsupported Messages application.") }
+        return """
         with timeout of 20 seconds
-          tell application id "com.apple.iChat"
+          tell application id \(literal(bundleIdentifier))
             set targetService to first service whose service type is iMessage
             set targetBuddy to buddy \(literal(recipient)) of targetService
             send \(literal(text)) to targetBuddy
@@ -111,7 +133,8 @@ final class NativeMessages {
         return "AXON_MESSAGES_ACCEPTED"
         """
     }
-    private static func sendFixedScript(_ recipient: String, _ text: String) async throws {
+    private static func sendFixedScript(_ recipient: String, _ text: String, bundleIdentifier: String) async throws {
+        let source = try script(recipient: recipient, text: text, bundleIdentifier: bundleIdentifier)
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             DispatchQueue.global(qos: .userInitiated).async {
                 let process = Process(), input = Pipe(), output = Pipe(), errors = Pipe()
@@ -121,7 +144,7 @@ final class NativeMessages {
                 process.standardInput = input; process.standardOutput = output; process.standardError = errors
                 do {
                     try process.run()
-                    input.fileHandleForWriting.write(Data(script(recipient: recipient, text: text).utf8)); try? input.fileHandleForWriting.close()
+                    input.fileHandleForWriting.write(Data(source.utf8)); try? input.fileHandleForWriting.close()
                     let deadline = Date().addingTimeInterval(30)
                     while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.05) }
                     if process.isRunning { process.terminate(); Thread.sleep(forTimeInterval: 0.1); if process.isRunning { kill(process.processIdentifier, SIGKILL) }; throw Failure(text: "Messages request timed out; outcome is unknown.") }

@@ -198,10 +198,18 @@ export function mountAgentActions(app:Hono<AuthVars>,chatView:(r:any)=>any,isBus
  api.post('/agent-actions/:id/complete',async c=>{
   expire();const owner=c.get('user').id,r=owned(owner,c.req.param('id')),b=await c.req.json();
   if(['mcp.call','whatsapp.send'].includes(r.operation))fail('These receipts can only be recorded by the server executor.',409);
-  if(!['succeeded','failed','uncertain'].includes(b.status)||b.result!==undefined&&!isObject(b.result)||b.error!==undefined&&(typeof b.error!=='string'||b.error.length>1000))fail('Invalid native action receipt.');
+  if(!['succeeded','failed','uncertain'].includes(b.status)||b.result!==undefined&&!isObject(b.result)||b.error!==undefined&&(typeof b.error!=='string'||b.error.length>1000)||b.errorCode!==undefined&&(typeof b.errorCode!=='string'||b.errorCode.length>80))fail('Invalid native action receipt.');
   if(b.status==='succeeded'&&!isObject(b.result))fail('A successful action requires its provider receipt.');
   if(b.result&&/"(?:access_token|refresh_token|id_token|client_secret|authorization|accessToken|refreshToken|clientSecret)"\s*:/.test(JSON.stringify(b.result)))fail('Credentials must never enter a provider action receipt.');
-  const receipt={status:b.status,result:b.result??null,error:b.status==='succeeded'?null:(b.status==='uncertain'?'Provider outcome is unknown. Review the provider before another attempt.':'Native action failed. Review permissions, account and arguments; nothing was retried.')};
+  // Only fixed application-owned codes can improve a failure message. Never
+  // persist raw provider/native error text or reinterpret an unknown outcome.
+  const driveFailures:Record<string,string>={
+   drive_version_unavailable:'Drive did not provide a usable file version. No change was dispatched. Refresh the file before a new attempt.',
+   drive_version_changed:'The Drive file changed since the selected version. No change was dispatched. Review the current file before a new attempt.',
+   drive_precondition_failed:'Drive rejected the change because its file version no longer matched. Nothing was retried. Review the current file before a new attempt.',
+  };
+  const specific=b.status==='failed'&&['drive.update','drive.trash'].includes(r.operation)&&Object.hasOwn(driveFailures,b.errorCode)?driveFailures[b.errorCode]:null;
+  const receipt={status:b.status,result:b.result??null,error:b.status==='succeeded'?null:(b.status==='uncertain'?'Provider outcome is unknown. Review the provider before another attempt.':specific??'Native action failed. Review permissions, account and arguments; nothing was retried.')};
   if(Buffer.byteLength(JSON.stringify(receipt))>24_000)fail('Native receipt exceeds the bounded result limit.',413);
   const fingerprint=hash(receipt);if(r.receipt_hash===fingerprint)return c.json({action:actionView(r)});
   if(r.state!=='running'&&!(r.state==='uncertain'&&!r.receipt_hash))fail('This action cannot accept another receipt. Review its saved state.',409);
