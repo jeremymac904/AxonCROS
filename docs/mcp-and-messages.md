@@ -14,11 +14,13 @@ Open Settings → Connectors, then **Manage Buffer MCP** or **Manage Zapier MCP*
 
 Provider tokens stay in the owner's encrypted local vault. They are not returned to the renderer or model. Token rotation, schema changes, disconnecting or revoking permission invalidates pending work. A provider timeout may mean an action completed; uncertain results are never automatically retried. Check provider history before attempting it again.
 
-Buffer draft creation requires `saveToDraft: true` and exact review. Post editing, direct publishing, deletion and arbitrary GraphQL are blocked until a verified adapter can safely support them. Zapier administration, account provisioning and code execution are not exposed. External messaging tools require exact review. WhatsApp additionally needs a supported business account/action and its own provider allowance; seeing a Zapier tool does not prove WhatsApp access or free messaging.
+Buffer draft creation requires `saveToDraft: true` and exact review. Post editing, direct publishing, deletion and arbitrary GraphQL are blocked until a verified adapter can safely support them. Zapier administration, account provisioning and code execution are not exposed. External messaging tools require exact review.
+
+WhatsApp is built directly into AxonCROS through its own QR-linked session, separate from Hermes and Zapier; no WhatsApp Business API account is required for that connection. Follow the [direct WhatsApp setup guide](direct-whatsapp.md). Any optional Zapier business integration is a separate path and works only if its specific provider account and action are supported; discovery alone does not establish access.
 
 Enable MCP separately in a chat, select its allowed connections and acknowledge that retrieved results can enter the configured model. Only then request a specific synthetic test. Verify the saved provider receipt; a successful discovery is not a successful action.
 
-Official references: [Zapier connection methods](https://docs.zapier.com/mcp/overview/how-connections-work), [Zapier usage](https://docs.zapier.com/mcp/overview/usage), [Buffer MCP](https://developers.buffer.com/guides/integrations/mcp), [Buffer limits](https://developers.buffer.com/guides/api-limits.html), [WhatsApp pricing](https://whatsappbusiness.com/products/platform-pricing/).
+Official references: [Zapier connection methods](https://docs.zapier.com/mcp/overview/how-connections-work), [Zapier usage](https://docs.zapier.com/mcp/overview/usage), [Buffer MCP](https://developers.buffer.com/guides/integrations/mcp), [Buffer limits](https://developers.buffer.com/guides/api-limits.html).
 
 ## iMessage on a Mac
 
