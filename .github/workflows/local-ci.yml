@@ -1,0 +1,66 @@
+name: Local source checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: local-source-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.20.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Test source boundaries and create candidate
+        run: |
+          python3 script/test_source_release.py
+          python3 script/prepare-source-release.py --output-dir "$RUNNER_TEMP/candidate"
+          mkdir "$RUNNER_TEMP/extracted"
+          tar -xzf "$RUNNER_TEMP"/candidate/*.tar.gz -C "$RUNNER_TEMP/extracted"
+      - name: Build and test extracted source with synthetic data
+        working-directory: ${{ runner.temp }}/extracted/AxonCROS-source/bot-hq
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: |
+          npm ci --no-fund
+          npm run typecheck
+          npm run build
+          npm audit --omit=dev --audit-level=moderate
+          node --import tsx server/scripts/local-text-test.ts
+          node --import tsx server/scripts/axon-r3-test.ts
+          node --import tsx server/scripts/axon-news-test.ts
+          node --import tsx server/scripts/axon-avatar-test.ts
+          if test -f server/scripts/axon-connectors-test.ts; then node --import tsx server/scripts/axon-connectors-test.ts; fi
+          if test -f server/scripts/local-model-test.ts; then node --import tsx server/scripts/local-model-test.ts; fi
+  native:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Native synthetic component tests
+        run: |
+          bash mac-wrapper/script/test_native_permission.sh
+          bash mac-wrapper/script/test_native_panels.sh
+          bash mac-wrapper/script/test_native_contact_handoff.sh
+          bash mac-wrapper/script/test_native_contacts.sh
+          bash mac-wrapper/script/test_native_verification.sh
+          if test -f mac-wrapper/script/test_local_installation.sh; then bash mac-wrapper/script/test_local_installation.sh; fi
+          if test -f mac-wrapper/script/test_native_workspace.sh; then bash mac-wrapper/script/test_native_workspace.sh; fi
+          if test -f mac-wrapper/script/test_native_picker_process.sh; then bash mac-wrapper/script/test_native_picker_process.sh; fi
+          bash mac-wrapper/script/test_native_path_selection.sh
+      - name: Compile native wrapper without installing or launching
+        run: bash mac-wrapper/script/build.sh

@@ -1,0 +1,63 @@
+/** Isolated avatar migration/API persistence checks. No model, service, real files or Hermes access. */
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import {Hono} from 'hono';
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'axoncros-avatar-'));
+Object.assign(process.env,{BOT_HQ_MODE:'local-text',SESSION_SECRET:'synthetic-avatar-test-secret',DB_PATH:path.join(temp,'test.db')});
+const {db}=await import('../src/db.js');
+const defaults:Record<string,string>={'mortgage-team-lead':'Captain','loan-officer-assistant':'Pixel','loan-processing-assistant':'Bolt','mortgage-marketing-assistant':'Nova','mortgage-email-assistant':'Scout'};
+const imageId=crypto.randomUUID(),imageUrl=`/api/local/files/${imageId}/content`;
+try{
+ db.exec(`CREATE TABLE local_messages(id TEXT PRIMARY KEY);CREATE TABLE axon_agents(owner_id TEXT NOT NULL REFERENCES users(id),profile_id TEXT NOT NULL,name TEXT NOT NULL,avatar_url TEXT NOT NULL DEFAULT '',soul TEXT NOT NULL,soul_version INTEGER NOT NULL DEFAULT 1,version INTEGER NOT NULL DEFAULT 1,updated_at INTEGER NOT NULL,PRIMARY KEY(owner_id,profile_id));`);
+ for(const owner of ['owner','foreign','fresh','httpfresh']){db.prepare('INSERT INTO users VALUES(?,?,?,NULL,1)').run(owner,owner+'@synthetic.invalid','Synthetic '+owner);db.prepare('INSERT INTO auth_sessions VALUES(?,?,?,?)').run(owner+'-synthetic-session',owner,Date.now(),Date.now()+3600000);}
+ for(const profileId of ['general',...Object.keys(defaults)])db.prepare('INSERT INTO axon_agents VALUES(?,?,?,?,?,?,?,?)').run('owner',profileId,'Saved '+profileId,profileId==='loan-processing-assistant'?imageUrl:'','SAVED_SOUL_'+profileId,3,profileId==='loan-officer-assistant'?7:1,12345);
+ const before=db.prepare('SELECT * FROM axon_agents ORDER BY profile_id').all() as any[];
+ const {agent,mountWorkspace}=await import('../src/axon-workspace.js');
+ const after=db.prepare('SELECT * FROM axon_agents ORDER BY profile_id').all() as any[];
+ assert.deepEqual(after.map(({avatar_character,...rest})=>rest),before);
+ assert.equal(agent('owner','mortgage-team-lead').avatarCharacter,'Captain');
+ assert.equal(agent('owner','loan-officer-assistant').avatarCharacter,null);
+ assert.equal(agent('owner','loan-processing-assistant').avatarUrl,imageUrl);
+ assert.equal(agent('owner','loan-processing-assistant').avatarCharacter,null);
+ assert.equal(agent('owner','general').avatarCharacter,null);
+ for(const [profileId,character] of Object.entries(defaults))assert.equal(agent('fresh',profileId).avatarCharacter,character);
+ assert.equal(agent('fresh','general').avatarCharacter,null);
+ assert.equal((db.prepare('SELECT avatar_character FROM axon_agents WHERE owner_id=? AND profile_id=?').get('owner','mortgage-team-lead') as any).avatar_character,'Captain');
+ const {requireUser}=await import('../src/lib/auth.js');
+ const app=new Hono<any>();app.use('/api/local/*',requireUser);mountWorkspace(app,async()=>{throw Error('No draft calls permitted');});
+ assert.equal((db.prepare('SELECT count(*) n FROM axon_agents WHERE owner_id=?').get('httpfresh') as any).n,0);
+ const firstList=await app.request('http://localhost/api/local/agents',{headers:{Cookie:'grokbot_session=httpfresh-synthetic-session'}});assert.equal(firstList.status,200);const lazyAgents=(await firstList.json() as any).agents;assert.equal(lazyAgents.length,6);for(const p of ['general',...Object.keys(defaults)]){const a=lazyAgents.find((item:any)=>item.id===p);assert.equal(a.avatarCharacter,defaults[p]??null);assert.equal(a.version,1);assert.equal(a.avatarUrl,'');}assert.equal((db.prepare('SELECT count(*) n FROM axon_agents WHERE owner_id=?').get('httpfresh') as any).n,6);
+ const request=async(profileId:string,method='GET',body?:any,owner='owner')=>{const response=await app.request('http://localhost/api/local/agents/'+profileId,{method,headers:{Cookie:`grokbot_session=${owner}-synthetic-session`,'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});return {status:response.status,data:await response.json() as any};};
+ const save=async(profileId:string,body:any,owner='owner')=>{const r=await request(profileId,'PATCH',body,owner);assert.equal(r.status,200,JSON.stringify(r.data));return r.data.agent;};
+ assert.equal((await request('general','GET',undefined,'missing')).status,401);
+ let captain=await save('mortgage-team-lead',{name:'Synthetic renamed lead',version:1});assert.equal(captain.avatarCharacter,'Captain');assert.equal(captain.soul,'SAVED_SOUL_mortgage-team-lead');assert.equal(captain.soulVersion,3);
+ captain=await save('mortgage-team-lead',{avatarCharacter:'Scout',avatarUrl:'',version:captain.version});assert.equal(captain.avatarCharacter,'Scout');assert.equal(captain.avatarUrl,'');
+ captain=await save('mortgage-team-lead',{name:'Synthetic second name',version:captain.version});assert.equal(captain.avatarCharacter,'Scout');
+ assert.equal((await request('mortgage-team-lead','PATCH',{avatarCharacter:'Captain',version:1})).status,409);
+ for(const invalid of ['captain','Unknown','',42,{},[]])assert.equal((await request('mortgage-team-lead','PATCH',{avatarCharacter:invalid,version:captain.version})).status,400);
+ assert.equal(agent('owner','mortgage-team-lead').version,captain.version);
+ captain=await save('mortgage-team-lead',{avatarCharacter:null,version:captain.version});assert.equal(captain.avatarCharacter,null);
+ captain=await save('mortgage-team-lead',{name:'Synthetic initials retained',version:captain.version});assert.equal(captain.avatarCharacter,null);
+ const foreign=await save('mortgage-team-lead',{name:'Foreign own identity',avatarCharacter:'Bolt',ownerId:'owner',version:1},'foreign');assert.equal(foreign.avatarCharacter,'Bolt');assert.equal(agent('owner','mortgage-team-lead').name,captain.name);assert.equal(agent('owner','mortgage-team-lead').avatarCharacter,null);
+ // A real owned image row exercises upload authorization without reading any actual user file.
+ db.prepare('INSERT INTO axon_files VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(imageId,'owner',null,null,'synthetic-avatar.png','image/png',4,'synthetic-hash',Buffer.from([1,2,3,4]),'images',null,0,1,1);
+ const custom=await save('loan-processing-assistant',{name:'Synthetic uploaded identity',version:1});assert.equal(custom.avatarUrl,imageUrl);assert.equal(custom.avatarCharacter,null);
+ const retainedInitials=await save('loan-officer-assistant',{name:'Synthetic existing initials',version:7});assert.equal(retainedInitials.avatarCharacter,null);
+ let nova=await save('mortgage-marketing-assistant',{avatarUrl:imageUrl,version:1});assert.equal(nova.avatarUrl,imageUrl);assert.equal(nova.avatarCharacter,'Nova');
+ nova=await save('mortgage-marketing-assistant',{avatarUrl:'',version:nova.version});assert.equal(nova.avatarUrl,'');assert.equal(nova.avatarCharacter,null);
+ nova=await save('mortgage-marketing-assistant',{name:'Synthetic legacy clear preserved',version:nova.version});assert.equal(nova.avatarCharacter,null);
+ assert.equal((await request('mortgage-team-lead','PATCH',{avatarUrl:imageUrl,version:foreign.version},'foreign')).status,404);
+ const general=await save('general',{avatarCharacter:'Pixel',avatarUrl:'',version:1});assert.equal(general.avatarCharacter,'Pixel');
+ const soul=await request('mortgage-email-assistant/soul','PUT',{soul:'SYNTHETIC_EDITED_SOUL',version:1},'fresh');assert.equal(soul.status,200);assert.equal(soul.data.agent.avatarCharacter,'Scout');
+ const persisted=db.prepare('SELECT owner_id,profile_id,avatar_url,avatar_character,name,soul,soul_version,version,updated_at FROM axon_agents ORDER BY owner_id,profile_id').all();
+ const expectedHash=crypto.createHash('sha256').update(JSON.stringify(persisted)).digest('hex');
+ const child=spawnSync(process.execPath,['--import','tsx','--input-type=module','-e',`import crypto from 'node:crypto';process.env.BOT_HQ_MODE='local-text';process.env.SESSION_SECRET='synthetic';process.env.DB_PATH=${JSON.stringify(path.join(temp,'test.db'))};const {db}=await import('./server/src/db.ts');await import('./server/src/axon-workspace.ts');const rows=db.prepare('SELECT owner_id,profile_id,avatar_url,avatar_character,name,soul,soul_version,version,updated_at FROM axon_agents ORDER BY owner_id,profile_id').all();if(crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex')!==${JSON.stringify(expectedHash)})throw Error('Restart changed identity data');db.close();`],{cwd:process.cwd(),encoding:'utf8'});assert.equal(child.status,0,child.stderr);
+ console.log('PASS additive avatar migration preserves every original identity field, custom URL and edited initials; fresh-owner HTTP list lazily persists allfive exact defaults and General initials');
+ console.log('PASS explicit character/initials selection, name-only persistence, legacy URL clear, upload priority and Soul-edit stability');
+ console.log('PASS invalid allowlist, unauthenticated access, foreign-image ownership and stale version rejection; owner identities remain separate');
+ console.log('PASS separate-process restart preserves all avatar choices, names, Soul content/versions and timestamps; no model/service/Hermes calls');
+}finally{db.close();fs.rmSync(temp,{recursive:true,force:true});}

@@ -1,0 +1,1486 @@
+{
+  "artworkLicense": {
+    "attribution": "Jeremy McDonald",
+    "paths": [
+      "bot-hq/web/public/assets/axoncros/AxonCROS_Primary_Logo.png",
+      "bot-hq/web/public/assets/axoncros/AxonCROS_Symbol.png",
+      "bot-hq/web/public/assets/bot-team/Bolt/Bolt_celebrating.gif",
+      "bot-hq/web/public/assets/bot-team/Bolt/Bolt_celebrating.webp",
+      "bot-hq/web/public/assets/bot-team/Bolt/Bolt_profile.png",
+      "bot-hq/web/public/assets/bot-team/Bolt/Bolt_thinking.gif",
+      "bot-hq/web/public/assets/bot-team/Bolt/Bolt_thinking.webp",
+      "bot-hq/web/public/assets/bot-team/Bolt/Bolt_working.gif",
+      "bot-hq/web/public/assets/bot-team/Bolt/Bolt_working.webp",
+      "bot-hq/web/public/assets/bot-team/Captain/Captain_celebrating.gif",
+      "bot-hq/web/public/assets/bot-team/Captain/Captain_celebrating.webp",
+      "bot-hq/web/public/assets/bot-team/Captain/Captain_profile.png",
+      "bot-hq/web/public/assets/bot-team/Captain/Captain_thinking.gif",
+      "bot-hq/web/public/assets/bot-team/Captain/Captain_thinking.webp",
+      "bot-hq/web/public/assets/bot-team/Captain/Captain_working.gif",
+      "bot-hq/web/public/assets/bot-team/Captain/Captain_working.webp",
+      "bot-hq/web/public/assets/bot-team/Nova/Nova_celebrating.gif",
+      "bot-hq/web/public/assets/bot-team/Nova/Nova_celebrating.webp",
+      "bot-hq/web/public/assets/bot-team/Nova/Nova_profile.png",
+      "bot-hq/web/public/assets/bot-team/Nova/Nova_thinking.gif",
+      "bot-hq/web/public/assets/bot-team/Nova/Nova_thinking.webp",
+      "bot-hq/web/public/assets/bot-team/Nova/Nova_working.gif",
+      "bot-hq/web/public/assets/bot-team/Nova/Nova_working.webp",
+      "bot-hq/web/public/assets/bot-team/Pixel/Pixel_celebrating.gif",
+      "bot-hq/web/public/assets/bot-team/Pixel/Pixel_celebrating.webp",
+      "bot-hq/web/public/assets/bot-team/Pixel/Pixel_profile.png",
+      "bot-hq/web/public/assets/bot-team/Pixel/Pixel_thinking.gif",
+      "bot-hq/web/public/assets/bot-team/Pixel/Pixel_thinking.webp",
+      "bot-hq/web/public/assets/bot-team/Pixel/Pixel_working.gif",
+      "bot-hq/web/public/assets/bot-team/Pixel/Pixel_working.webp",
+      "bot-hq/web/public/assets/bot-team/Scout/Scout_celebrating.gif",
+      "bot-hq/web/public/assets/bot-team/Scout/Scout_celebrating.webp",
+      "bot-hq/web/public/assets/bot-team/Scout/Scout_profile.png",
+      "bot-hq/web/public/assets/bot-team/Scout/Scout_thinking.gif",
+      "bot-hq/web/public/assets/bot-team/Scout/Scout_thinking.webp",
+      "bot-hq/web/public/assets/bot-team/Scout/Scout_working.gif",
+      "bot-hq/web/public/assets/bot-team/Scout/Scout_working.webp",
+      "mac-wrapper/Resources/AxonCROS_Symbol.png"
+    ],
+    "permissionRecorded": "2026-11-13",
+    "spdx": "CC-BY-4.0"
+  },
+  "baseCommit": "0b5816acda77b627c16cf3f05202ae6857f52b29",
+  "dirtyWorktree": false,
+  "edition": "sanitized-local-source-candidate",
+  "excludedPaths": [
+    ".codex/environments/environment.toml",
+    "HANDOFF_MANIFEST.md",
+    "MACBOOK_HANDOFF.md",
+    "bot-hq/assets/icon.svg",
+    "bot-hq/assets/readme-banner.svg",
+    "bot-hq/assets/screenshots/chat-dark.png",
+    "bot-hq/assets/screenshots/chat-light.png",
+    "bot-hq/assets/screenshots/home-screen.jpg",
+    "bot-hq/assets/screenshots/viewer.png",
+    "bot-hq/gateway/.gitignore",
+    "bot-hq/gateway/README.md",
+    "bot-hq/gateway/manage.py",
+    "bot-hq/gateway/subscription_adapter.py",
+    "bot-hq/gateway/test_subscription_adapter.py",
+    "bot-hq/server/scripts/axon-ui-acceptance.mjs",
+    "bot-hq/tests/ask-weather.wav",
+    "bot-hq/web/artwork/avatars/dr-eggbot-yc-bookface.svg",
+    "bot-hq/web/artwork/avatars/jules-personal-website.svg",
+    "bot-hq/web/artwork/shapes/blob-orange.svg",
+    "bot-hq/web/artwork/shapes/cloud-orange.svg",
+    "bot-hq/web/artwork/shapes/clover-orange.svg",
+    "bot-hq/web/artwork/shapes/flower-orange.svg",
+    "bot-hq/web/artwork/shapes/heart-orange.svg",
+    "bot-hq/web/artwork/shapes/heart-ring-gray.svg",
+    "bot-hq/web/artwork/shapes/heart-ring-white.svg",
+    "bot-hq/web/artwork/shapes/hex-orange.svg",
+    "bot-hq/web/artwork/shapes/house-orange.svg",
+    "bot-hq/web/artwork/shapes/sparkle-orange.svg",
+    "bot-hq/web/artwork/shapes/square-orange.svg",
+    "bot-hq/web/artwork/shapes/star-orange.svg",
+    "bot-hq/web/artwork/shapes/tablet-orange.svg",
+    "bot-hq/web/artwork/shapes/teardrop-orange.svg",
+    "bot-hq/web/artwork/shapes/wedge-orange.svg",
+    "bot-hq/web/public/assets/apps/1password.svg",
+    "bot-hq/web/public/assets/apps/atlassian.png",
+    "bot-hq/web/public/assets/apps/canva.png",
+    "bot-hq/web/public/assets/apps/connected-0.png",
+    "bot-hq/web/public/assets/apps/connected-1.png",
+    "bot-hq/web/public/assets/apps/connected-2.png",
+    "bot-hq/web/public/assets/apps/connected-3.png",
+    "bot-hq/web/public/assets/apps/continual-learning.png",
+    "bot-hq/web/public/assets/apps/cursor-team-kit.png",
+    "bot-hq/web/public/assets/apps/dropbox.png",
+    "bot-hq/web/public/assets/apps/finance.png",
+    "bot-hq/web/public/assets/apps/google-docs.png",
+    "bot-hq/web/public/assets/apps/google-sheets.png",
+    "bot-hq/web/public/assets/apps/linear.png",
+    "bot-hq/web/public/assets/apps/notion.png",
+    "bot-hq/web/public/assets/apps/tubealfred.png",
+    "bot-hq/web/public/assets/icons/apps.svg",
+    "bot-hq/web/public/assets/icons/arrow_down.svg",
+    "bot-hq/web/public/assets/icons/arrow_down_scroll-white.svg",
+    "bot-hq/web/public/assets/icons/arrow_down_scroll.svg",
+    "bot-hq/web/public/assets/icons/chat_filled-white.svg",
+    "bot-hq/web/public/assets/icons/chat_filled.svg",
+    "bot-hq/web/public/assets/icons/check.svg",
+    "bot-hq/web/public/assets/icons/chev_down.svg",
+    "bot-hq/web/public/assets/icons/chev_right.svg",
+    "bot-hq/web/public/assets/icons/clock.svg",
+    "bot-hq/web/public/assets/icons/close.svg",
+    "bot-hq/web/public/assets/icons/composer_plus.svg",
+    "bot-hq/web/public/assets/icons/copy-white.svg",
+    "bot-hq/web/public/assets/icons/copy.svg",
+    "bot-hq/web/public/assets/icons/edit.svg",
+    "bot-hq/web/public/assets/icons/file.svg",
+    "bot-hq/web/public/assets/icons/mic.svg",
+    "bot-hq/web/public/assets/icons/paperclip.svg",
+    "bot-hq/web/public/assets/icons/plus.svg",
+    "bot-hq/web/public/assets/icons/record.svg",
+    "bot-hq/web/public/assets/icons/save.svg",
+    "bot-hq/web/public/assets/icons/search.svg",
+    "bot-hq/web/public/assets/icons/share.svg",
+    "bot-hq/web/public/assets/icons/sidebar.svg",
+    "bot-hq/web/public/assets/icons/slack.svg",
+    "bot-hq/web/public/assets/icons/star.svg",
+    "bot-hq/web/public/assets/icons/verified.svg",
+    "bot-hq/web/public/assets/icons/voice_a.svg",
+    "bot-hq/web/public/assets/icons/voice_b.svg",
+    "bot-hq/web/public/favicon.svg",
+    "bot-hq/web/scripts/gen-shapes.mjs",
+    "bot-hq/web/src/avatar/shapes.gen.ts",
+    "docs/ai-bot-team.md",
+    "docs/axon-cros-acceptance.md",
+    "docs/axon-cros-r3-native.md",
+    "macos-loopback.patch"
+  ],
+  "files": {
+    ".github/workflows/local-ci.yml": {
+      "bytes": 2964,
+      "sha256": "ab9fe952c1e575a695690b11fbe564882133500806b2bf95138972f4034bf99c"
+    },
+    ".gitignore": {
+      "bytes": 305,
+      "sha256": "a21b83e7d1bf1fa9796585c67cdee8dcb4c584c03adc7f1eca01c71b3405cf9d"
+    },
+    "ARTWORK_LICENSE.md": {
+      "bytes": 1851,
+      "sha256": "003fb6e86d70a6a22ffefb372a03a1197bb1b4342a329349e9fe0c8a70349727"
+    },
+    "ASSET_POLICY.md": {
+      "bytes": 1960,
+      "sha256": "d2b96cdb40ed62bcb82e808b97f50d8cf88afaeb2002b04a9c3c38313ca90a39"
+    },
+    "LICENSE": {
+      "bytes": 1593,
+      "sha256": "8cd9fb55ed49962bbeb40947c29eb0bce1dc76c66e82faa7d931c9bd04fba0b9"
+    },
+    "LICENSES/CC-BY-4.0.txt": {
+      "bytes": 18657,
+      "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411"
+    },
+    "README.md": {
+      "bytes": 4971,
+      "sha256": "228d83f3fccdb687bd3cb1908687a1e24a6efabd10351989ad6c616093c54ce7"
+    },
+    "SECURITY.md": {
+      "bytes": 2451,
+      "sha256": "274197cda8035c76e658454604d119e0c8069770c608b8090e7074148993726f"
+    },
+    "SOURCE_EDITION.md": {
+      "bytes": 576,
+      "sha256": "d45e10cabd9d53150e1792665a91092e3f2eca034a8ce15f7a739862a43f123e"
+    },
+    "bot-hq/.env.example": {
+      "bytes": 2764,
+      "sha256": "60e3d9b79b30bd4268902add48f9366016c3f4ef6868ce72a72fbb2e1093fb11"
+    },
+    "bot-hq/.gitignore": {
+      "bytes": 215,
+      "sha256": "4653bf9cc28909c3c6da5b17e782918f4a76a068f0283fb3cc518581d2ac045c"
+    },
+    "bot-hq/LICENSE": {
+      "bytes": 1071,
+      "sha256": "62679713ea2a576199fa4336de477b048c2979f751532edef529d78b707a189f"
+    },
+    "bot-hq/README.md": {
+      "bytes": 497,
+      "sha256": "b19589e6efd971a564693a7a04330008d346c4040efaefb909fca22899f51aca"
+    },
+    "bot-hq/THIRD_PARTY_NOTICES.md": {
+      "bytes": 3963,
+      "sha256": "0afb3e373c3d31f6c311b94c3583bbb66c954771df7458675dc5f4e21e1d0822"
+    },
+    "bot-hq/docs/ARCHITECTURE.md": {
+      "bytes": 7656,
+      "sha256": "b58ef00a04864ab3c926e6dbfb4a7f8b22f089592667f27caa1e291d2dcb3a61"
+    },
+    "bot-hq/docs/local-research.md": {
+      "bytes": 4174,
+      "sha256": "8cacdf11da812ae227801b0fc1923e94d3c9769360cbaff93e13e34108e86e4f"
+    },
+    "bot-hq/docs/local-text-mode.md": {
+      "bytes": 6467,
+      "sha256": "2d142131f15289c8fce24c3dbac62797dc9fa60c7e5cd990b8aa10ad10e0d7eb"
+    },
+    "bot-hq/docs/orgo-builder-guide.md": {
+      "bytes": 79306,
+      "sha256": "2d2e7ea5f561383f908e3d6001c9fac861bd8900ffc0ee2f82a1ac9598ed3cf2"
+    },
+    "bot-hq/docs/xai-and-composio.md": {
+      "bytes": 62865,
+      "sha256": "383350d8356bb6155632d0c9b3ce521005c21546e887d6bc29a547c174bb2bb9"
+    },
+    "bot-hq/package-lock.json": {
+      "bytes": 228510,
+      "sha256": "9e7fdc9eee10cdfe473ed60bd7ffd67a3f742bf92ee4f25d29b8777092004baa"
+    },
+    "bot-hq/package.json": {
+      "bytes": 589,
+      "sha256": "c36ce0105d3bfe1530f1f3aa6adecd0d8d08d317a25488346d98d516a87161f3"
+    },
+    "bot-hq/scripts/add-hq-to-hermes.py": {
+      "bytes": 3579,
+      "sha256": "cec85cea12a8eeac74ad18fb63472eab28a9092622c8891f96e7f49fd6022ef3"
+    },
+    "bot-hq/scripts/install-on-computer.sh": {
+      "bytes": 5106,
+      "sha256": "51f646acefde2f884a1bbbe654973e032a70d9f803ac96a34022b1131ac60a7c"
+    },
+    "bot-hq/scripts/pack.sh": {
+      "bytes": 1223,
+      "sha256": "2860dae7a0ade8fccd09e190834ed0c8b45bde370aaaf998e91e3d3529c99a4e"
+    },
+    "bot-hq/scripts/sign-in-link.sh": {
+      "bytes": 831,
+      "sha256": "37e8997f928836f6a1d2a625ab8b36218cb05fd19b70a128cd1c70f798628297"
+    },
+    "bot-hq/server/box/ext/manifest.json": {
+      "bytes": 195,
+      "sha256": "5c3474d5a11c769bb015de12147a5239c17389b14fb9a7289bc6dcc79ab6d717"
+    },
+    "bot-hq/server/box/ext/newtab.html": {
+      "bytes": 409,
+      "sha256": "526392fba5fdf76c2dc80d8af251a8c348a529acef32fc67e72cec4ae305ef11"
+    },
+    "bot-hq/server/box/ext/newtab.js": {
+      "bytes": 646,
+      "sha256": "a414fc8565a966a18865fd24bae4ba2ee459b256d7e39de62c3088bcd1acc5a4"
+    },
+    "bot-hq/server/box/home.html": {
+      "bytes": 7469,
+      "sha256": "6f2e38552d86a5991fa0c6516302c2fd2d9e80571e3ace463c9a3be609338d4b"
+    },
+    "bot-hq/server/box/hq-home.py": {
+      "bytes": 14768,
+      "sha256": "46128dac2d0f424d5831ae9f03774f49fae967d56267ec1715747e45abe34f2a"
+    },
+    "bot-hq/server/box/hq-screen.py": {
+      "bytes": 25580,
+      "sha256": "6754fd6234b573f38696273906daecf9d320e4ab6d1e0ddf6857b2db31d086ff"
+    },
+    "bot-hq/server/box/hq-shell.py": {
+      "bytes": 16730,
+      "sha256": "77142f9d83894ee60c83c188087b3036bd45b1e2e4c6b09a1da64d7098480b4e"
+    },
+    "bot-hq/server/box/hqlib.py": {
+      "bytes": 37445,
+      "sha256": "4c625bb1ae9ea03576c5ea4652aa7c543b377d6ffca39ea8f9f7a7025598b7de"
+    },
+    "bot-hq/server/package.json": {
+      "bytes": 818,
+      "sha256": "28a415b7c458c910592a8e06569d9e115836f40adbde85513b5c614f683f7894"
+    },
+    "bot-hq/server/scripts/axon-avatar-test.ts": {
+      "bytes": 9313,
+      "sha256": "fba980111cdea1f6062974fcf3e8b843032c75ae8bcbccbb4b2a72fe693fb9b4"
+    },
+    "bot-hq/server/scripts/axon-connectors-test.ts": {
+      "bytes": 12433,
+      "sha256": "5c4e5b3407a79cf8abbdf7b2feb19e595ab7e05a5f7ba764fb72c0efeae2c4cf"
+    },
+    "bot-hq/server/scripts/axon-news-live-check.ts": {
+      "bytes": 1065,
+      "sha256": "ffd00185faedb9107b315dafa8563aed0ed273b64bf96428d80ed3853c8a3772"
+    },
+    "bot-hq/server/scripts/axon-news-test.ts": {
+      "bytes": 14971,
+      "sha256": "dbd0b75d803d5f189c7fa82d4b73ba8cf5bb2f12d7e8fc04305ab0b86958734d"
+    },
+    "bot-hq/server/scripts/axon-preview.mjs": {
+      "bytes": 3530,
+      "sha256": "66379dd96000f1298531493c2b2b147359900286c7ba051177d0a3e0d73a8a62"
+    },
+    "bot-hq/server/scripts/axon-r3-test.ts": {
+      "bytes": 26225,
+      "sha256": "00bfe97306fe32d94207e92cde803d891270146189142c1bd4620be69369a25c"
+    },
+    "bot-hq/server/scripts/axon-workspace-test.ts": {
+      "bytes": 20682,
+      "sha256": "508c0b81a7185c1533969bd9f40f934a4e705f56f4db2982b33515ca446892c4"
+    },
+    "bot-hq/server/scripts/build-profile-catalog.mjs": {
+      "bytes": 3095,
+      "sha256": "6bc4efff88412de839119652425d514e0b55d815babcebcf898ea0d13b7cd4e0"
+    },
+    "bot-hq/server/scripts/build-research-catalog.mjs": {
+      "bytes": 3656,
+      "sha256": "4fd56ed5b67a7e73da5dc2fcbf3f8a2d274172b02f8c79d922eb3b84bd3daf5e"
+    },
+    "bot-hq/server/scripts/desk-test.ts": {
+      "bytes": 17695,
+      "sha256": "21a7f97be1dfc04a157665346f734bb4d20c6a31994f61d7327b33d09d0dd970"
+    },
+    "bot-hq/server/scripts/local-model-test.ts": {
+      "bytes": 11003,
+      "sha256": "666f95d3e8e802d0fcc93673e3d8a7ca7b0dd19063537def613d0b5bc8e20109"
+    },
+    "bot-hq/server/scripts/local-research-test.ts": {
+      "bytes": 5013,
+      "sha256": "35006721572918f87cf3e62fce5ff9c3f58c63c9850c0429aa37fc223b4dea9a"
+    },
+    "bot-hq/server/scripts/local-text-test.ts": {
+      "bytes": 35062,
+      "sha256": "287c97c5f97fe7802e85a565f098bf46be55bfdef14cf206f4fa06149ada3624"
+    },
+    "bot-hq/server/src/agent/loop.ts": {
+      "bytes": 23272,
+      "sha256": "f4aecace499bd30edf88a524ea3f23a3f9da39a071d3383c2bc86813607e151b"
+    },
+    "bot-hq/server/src/agent/prompt.ts": {
+      "bytes": 5487,
+      "sha256": "430a188881bf7bf598714144606b19d594e02053dae5ffb170f95b99ce7c4f24"
+    },
+    "bot-hq/server/src/agent/rooms.ts": {
+      "bytes": 4181,
+      "sha256": "ba0c6cda9be754fd38596c6cde5ea2cd7803f08d3f55335a8cdb0885518ae236"
+    },
+    "bot-hq/server/src/agent/subagents.ts": {
+      "bytes": 3031,
+      "sha256": "d5263ba1dc9ff153dfc1db1d0af7faf078a31740c647c16cf74ef876de8effaf"
+    },
+    "bot-hq/server/src/agent/tools.ts": {
+      "bytes": 24649,
+      "sha256": "cb7f267c01afd6b85402a4ff9290c2de154d472516f60097a94c3342874a1439"
+    },
+    "bot-hq/server/src/axon-connectors.ts": {
+      "bytes": 21493,
+      "sha256": "bd3228da9c33b30db434964b1390463ab6d99583732f11f7beb291b66f7ba385"
+    },
+    "bot-hq/server/src/axon-contact-import.ts": {
+      "bytes": 9667,
+      "sha256": "28c2280a20a6a023da383158f6516c8848ed63b7d2126a651921b29e9fbe3ffb"
+    },
+    "bot-hq/server/src/axon-marketing.ts": {
+      "bytes": 23922,
+      "sha256": "e0fcaa21007e88889c616c19838219f85ecaedddf97c5b5c755bf3b9f8cbce20"
+    },
+    "bot-hq/server/src/axon-news-sources.ts": {
+      "bytes": 17390,
+      "sha256": "52059be0e9397f547719b036bf9c88e44e65b179bc255d8927f590ab8a771a4f"
+    },
+    "bot-hq/server/src/axon-news-types.ts": {
+      "bytes": 3060,
+      "sha256": "71ccaa4bd0cdeb1be52e8b9da0a4fcd5f54980200d13f0627ea595603ff86bf7"
+    },
+    "bot-hq/server/src/axon-news.ts": {
+      "bytes": 27559,
+      "sha256": "ef8dcabcfc3f4ba0902a33c50c6b815290fc21ea6d1cba4123cc42a95621c521"
+    },
+    "bot-hq/server/src/axon-r3-core.ts": {
+      "bytes": 5262,
+      "sha256": "3e3e15ef1ec54716673a1c4aba7baadcc3f692a636c7cba495dd7453d4a20853"
+    },
+    "bot-hq/server/src/axon-relationships.ts": {
+      "bytes": 45662,
+      "sha256": "c0e1566e9dd9f6e5e5b2645cc223a3f384b34e305992c75905668bdfc9634060"
+    },
+    "bot-hq/server/src/axon-workspace.ts": {
+      "bytes": 52640,
+      "sha256": "e0fa389141213424ea8fb0a0c1e1d664eb49578a4a600488afc032559fe28f5f"
+    },
+    "bot-hq/server/src/box.ts": {
+      "bytes": 3967,
+      "sha256": "baa7bc8574bce43607903567507c65a8abf159f4aa43a1a363239394086624c8"
+    },
+    "bot-hq/server/src/composio.ts": {
+      "bytes": 6320,
+      "sha256": "53e263b6a30b839a596aa3080f82ce02566677e256f5b266a9cb0fd8adcb9cd5"
+    },
+    "bot-hq/server/src/computer.ts": {
+      "bytes": 13090,
+      "sha256": "dc17c5d331c58caa8993570bd3ed23243939378b6c045ccda6255f5bc6662871"
+    },
+    "bot-hq/server/src/db-config.ts": {
+      "bytes": 1450,
+      "sha256": "23f6eef4856b1b0c42802d8b997bc5e0ed88501eeacae8b9dc58a36115ffd8b1"
+    },
+    "bot-hq/server/src/db.ts": {
+      "bytes": 5247,
+      "sha256": "2aefd2e86a244ebf7af0709779031bbf2d4b1070b5c976fa5e35bed51344e666"
+    },
+    "bot-hq/server/src/desk.ts": {
+      "bytes": 20927,
+      "sha256": "5780fbf7328468bb17ee9552a2faf4fec905b0f5368f24dbb9c06ceda9429e90"
+    },
+    "bot-hq/server/src/engine-memory.ts": {
+      "bytes": 2314,
+      "sha256": "59ec34d90b1b245f1b4bca8b12167f5cdf3db5296ad8e8d5d73fee40ac8499c4"
+    },
+    "bot-hq/server/src/engine.ts": {
+      "bytes": 22279,
+      "sha256": "81ba165ea026f784fadf7d78823f5805c2e3caa2df9f68ddad131d61eddd8564"
+    },
+    "bot-hq/server/src/env.ts": {
+      "bytes": 4134,
+      "sha256": "7739107b4845acaa2f41508f2e7c9aaca6ba44d1a79b6a58590ba88f5c51d968"
+    },
+    "bot-hq/server/src/full-server.ts": {
+      "bytes": 2414,
+      "sha256": "8ac4402196c7301d75c1e7a26193f7a9c61e8e16c50bc378b56192947615a865"
+    },
+    "bot-hq/server/src/idle.ts": {
+      "bytes": 4323,
+      "sha256": "4d337b44afcb690427b2c5940984bc0f012df98e59ad3d6b04dfba971da0c432"
+    },
+    "bot-hq/server/src/index.ts": {
+      "bytes": 217,
+      "sha256": "054a1cc1710a5d4178cc060078f3a2cab0ae5f2bdb830d6292f8499e8fd0cdca"
+    },
+    "bot-hq/server/src/lib/auth.ts": {
+      "bytes": 2349,
+      "sha256": "3435ea6d9e02b4cf73de1700b260979825888be35a63c357b4f50212c2161530"
+    },
+    "bot-hq/server/src/lib/des.ts": {
+      "bytes": 5510,
+      "sha256": "c8bf5d5999870a805f48bbfd55c93a1f3d1fbef830997df403ab45f451490da1"
+    },
+    "bot-hq/server/src/lib/hub.ts": {
+      "bytes": 847,
+      "sha256": "2437a4b30520d120c5630ce14d13f447e257d39fbdc6c70d471bdd5929f4ccff"
+    },
+    "bot-hq/server/src/lib/ids.ts": {
+      "bytes": 299,
+      "sha256": "e2d3e89230af7b5976e1cdf5aeb418bd9cef01c3a85a0771d4887a4b191eeff4"
+    },
+    "bot-hq/server/src/local-model.ts": {
+      "bytes": 4542,
+      "sha256": "c5b16570aa554d7eace2d75daab4a69debd3ba8d1d4f203181a19137c3278131"
+    },
+    "bot-hq/server/src/local-research-catalog.ts": {
+      "bytes": 196662,
+      "sha256": "43f61a821118055e40ba2ee57885cc6f2d033c149b384eb5c5c33a6aff5f9721"
+    },
+    "bot-hq/server/src/local-research.ts": {
+      "bytes": 12587,
+      "sha256": "b7a7924c9a68a637e0f6f2e02123143f1e65f6f6d0b49fbfc05b866fddd1001d"
+    },
+    "bot-hq/server/src/local-text-profiles.ts": {
+      "bytes": 35676,
+      "sha256": "195de2336c1c8bade65e68aab58b29d8f10d4ab8f26a9f57a31cde69486bbec4"
+    },
+    "bot-hq/server/src/local-text-server.ts": {
+      "bytes": 34376,
+      "sha256": "3d2cd700a08d7e55e70f52b8b0e49f1945708f5bc9336494c44806c9b3ce7dbb"
+    },
+    "bot-hq/server/src/mcp.ts": {
+      "bytes": 7304,
+      "sha256": "b5a53ab62fb01a332e91a597ccb70dcf214462ea5d546c920fac5891535ac308"
+    },
+    "bot-hq/server/src/orgo.ts": {
+      "bytes": 4648,
+      "sha256": "a52dc0c5e3069360b8ac9f37b907dcf0dcdf4d6eb99ab9b019f3f6da1946daa0"
+    },
+    "bot-hq/server/src/proactive.ts": {
+      "bytes": 6071,
+      "sha256": "7636e40391b32b2a020d8cba028c053f471aa6167465ed0da99ae52692e6b08a"
+    },
+    "bot-hq/server/src/routes-config.ts": {
+      "bytes": 14732,
+      "sha256": "d6b61efc0e5ff30e6003cef59b47ac389179452d676206a9a407c755d3828a43"
+    },
+    "bot-hq/server/src/routes-proactive.ts": {
+      "bytes": 856,
+      "sha256": "6c9e404c432c5a68b33b579c7deadeea68850db6a6f3fee5e9b781f57a682a75"
+    },
+    "bot-hq/server/src/routes-rooms.ts": {
+      "bytes": 2938,
+      "sha256": "8c5af04e5ee22077b58274b5d3ed0880eca9387237be440915dbc0e69965c939"
+    },
+    "bot-hq/server/src/routes.ts": {
+      "bytes": 23278,
+      "sha256": "7ce0aa0e525b9ff8c2f6bcce78bc705e2d50edfed346abda58a57bd1473c822a"
+    },
+    "bot-hq/server/src/routines.ts": {
+      "bytes": 1932,
+      "sha256": "38bcb0ac004461637ce59717142081e0fa1ebbeb3a3e23f37f85224161f2acae"
+    },
+    "bot-hq/server/src/store.ts": {
+      "bytes": 9334,
+      "sha256": "d74c2b850368383716ebc0010f87d74a297b054425d778e5abbf89c32555a0ea"
+    },
+    "bot-hq/server/src/triggers.ts": {
+      "bytes": 5046,
+      "sha256": "77f734a0f1fcf556d331a0e84f129ed9cc6b57dcdcd0ba43c1e766c4daa275f3"
+    },
+    "bot-hq/server/src/types.ts": {
+      "bytes": 7599,
+      "sha256": "bcc3d3ac5320552e073e3fcddf2112f5db78e53fb8dc2f101f9a079e19da2685"
+    },
+    "bot-hq/server/src/vnc.ts": {
+      "bytes": 8397,
+      "sha256": "245511f179c60aad429741ce23a1de51266927dbe3174192072b1bf8f29441c6"
+    },
+    "bot-hq/server/src/voice.ts": {
+      "bytes": 27468,
+      "sha256": "53b2a8905615214c63e7b931ce824f12f58ab205b152645fbf32034007fdee87"
+    },
+    "bot-hq/server/tsconfig.json": {
+      "bytes": 283,
+      "sha256": "31a0f2ec52223555cde1e7ad8bc40e4105de92eb193b29cd484db3110c01be2d"
+    },
+    "bot-hq/tests/e2e.mjs": {
+      "bytes": 11097,
+      "sha256": "3979e54b6d5a2ca9a2ccb1894ce1c8824a67c803550c42dc54ce2f9e6a9b2217"
+    },
+    "bot-hq/tests/voice-call.mjs": {
+      "bytes": 5760,
+      "sha256": "3a615316667217fb0708da4ea601f6ce7d3d0eea84c810636b0c10713fc0a99c"
+    },
+    "bot-hq/web/index.html": {
+      "bytes": 360,
+      "sha256": "1ffa9a18b9c211f9192d21efea233ef3d79a12beef647b3ee978d9291c3c027c"
+    },
+    "bot-hq/web/package.json": {
+      "bytes": 647,
+      "sha256": "130636718fc646a1931be300efd17db58f056b7e6b9843a4fea1d1b2ec19e656"
+    },
+    "bot-hq/web/public/assets/axoncros/AxonCROS_Primary_Logo.png": {
+      "bytes": 837302,
+      "sha256": "afa71ff5886288cc42a1ee241ebf14815099acf7a5daac0351f02dd045061fa9"
+    },
+    "bot-hq/web/public/assets/axoncros/AxonCROS_Symbol.png": {
+      "bytes": 691914,
+      "sha256": "078236459a72de47ab97d280ccfb03e7e5ce913e41a991c046915e413f83e143"
+    },
+    "bot-hq/web/public/assets/bot-team/Bolt/Bolt_celebrating.gif": {
+      "bytes": 1515292,
+      "sha256": "0767d20bee351db713d00cb30438d555dd227ccc0079f9c0212de6f71bc2bd94"
+    },
+    "bot-hq/web/public/assets/bot-team/Bolt/Bolt_celebrating.webp": {
+      "bytes": 1284628,
+      "sha256": "18c5090854a654bfc5efa926a5cb197159a755707082aefc7417657ce47a2c6d"
+    },
+    "bot-hq/web/public/assets/bot-team/Bolt/Bolt_profile.png": {
+      "bytes": 984376,
+      "sha256": "eafc61c12817580c47b5af0dd28becb106b94282d4a43423813ba69e78906f61"
+    },
+    "bot-hq/web/public/assets/bot-team/Bolt/Bolt_thinking.gif": {
+      "bytes": 1583716,
+      "sha256": "f1feebf2cc78c6324b64e77361bee53bf12a859d18678dd0c50ff8ef657962f1"
+    },
+    "bot-hq/web/public/assets/bot-team/Bolt/Bolt_thinking.webp": {
+      "bytes": 1328424,
+      "sha256": "e82fd08538afc1c7326f2ef2c12217a86a9a91fb8dd755b01a3e31702b2c3a8f"
+    },
+    "bot-hq/web/public/assets/bot-team/Bolt/Bolt_working.gif": {
+      "bytes": 1287207,
+      "sha256": "fa7371b6b606d926c7cb8d2acf713d9f3280c31943da2e638e3ea20faf9453d2"
+    },
+    "bot-hq/web/public/assets/bot-team/Bolt/Bolt_working.webp": {
+      "bytes": 1033372,
+      "sha256": "fdfa7793d96ac1ddb506563b287fc282113edbbb82f9944c3c8782f02d96e784"
+    },
+    "bot-hq/web/public/assets/bot-team/Captain/Captain_celebrating.gif": {
+      "bytes": 1790070,
+      "sha256": "4eb08ae06c654195c7e7aa7451fc0a18f6a521ad4ba8984c56b9d6f13e0a4695"
+    },
+    "bot-hq/web/public/assets/bot-team/Captain/Captain_celebrating.webp": {
+      "bytes": 1356692,
+      "sha256": "69f5a613a4aa1e813c9ed85f3dd0bb7d42a5150f0baad485c679fab8cd4aa124"
+    },
+    "bot-hq/web/public/assets/bot-team/Captain/Captain_profile.png": {
+      "bytes": 1124896,
+      "sha256": "f72fda9cfbc0f0f753b6df7a6505a23a142f7be2b32764121fafbd34393b8008"
+    },
+    "bot-hq/web/public/assets/bot-team/Captain/Captain_thinking.gif": {
+      "bytes": 1891183,
+      "sha256": "f644b8b15257e52be62f877637c0599bc190309bd1d2a89032aafaf0af263e6a"
+    },
+    "bot-hq/web/public/assets/bot-team/Captain/Captain_thinking.webp": {
+      "bytes": 1404526,
+      "sha256": "688284e962eb8e282425f0e9690f858b49c989c4f2efaf450b32eac4e721f856"
+    },
+    "bot-hq/web/public/assets/bot-team/Captain/Captain_working.gif": {
+      "bytes": 1446946,
+      "sha256": "b061a444c382d8305969155c8e4f30fde7a7763cda82bcf554a4a5591b9771b6"
+    },
+    "bot-hq/web/public/assets/bot-team/Captain/Captain_working.webp": {
+      "bytes": 1047766,
+      "sha256": "7376186199882dde18199f8d605563350026c3ab0c7ce55e03bef4b87e07b6c9"
+    },
+    "bot-hq/web/public/assets/bot-team/Nova/Nova_celebrating.gif": {
+      "bytes": 1437870,
+      "sha256": "30fa27d0479c162788215c58bc3aa500d9e410abcbd9e5e10aa63be924312f6d"
+    },
+    "bot-hq/web/public/assets/bot-team/Nova/Nova_celebrating.webp": {
+      "bytes": 1196510,
+      "sha256": "94cf10d51b3fbd7a9df53977be329bb2772c534e803a23a153c52e1f92f2f0df"
+    },
+    "bot-hq/web/public/assets/bot-team/Nova/Nova_profile.png": {
+      "bytes": 958297,
+      "sha256": "6ec17fbbd49ef15a19df0b719940fc5c0e5d783e169a873ed185833ce268673c"
+    },
+    "bot-hq/web/public/assets/bot-team/Nova/Nova_thinking.gif": {
+      "bytes": 1513885,
+      "sha256": "cf4daedf0292cdf041c6b9fdc30ff5312e887471b9ff20717713aa074cdb30e3"
+    },
+    "bot-hq/web/public/assets/bot-team/Nova/Nova_thinking.webp": {
+      "bytes": 1240912,
+      "sha256": "8112bc312f6228f89aabd117837e1cb8ae6bf5e4382b2924a6bed9cf1503064e"
+    },
+    "bot-hq/web/public/assets/bot-team/Nova/Nova_working.gif": {
+      "bytes": 1185330,
+      "sha256": "00078069811c0958c2ef1aa03e391df6d75347f0675447a9734e3a383837af06"
+    },
+    "bot-hq/web/public/assets/bot-team/Nova/Nova_working.webp": {
+      "bytes": 985398,
+      "sha256": "92b423463bb6b96a79b46069a6b6b44bbfdc47e4de0f37bacc8859c5b2a94e2e"
+    },
+    "bot-hq/web/public/assets/bot-team/Pixel/Pixel_celebrating.gif": {
+      "bytes": 1557381,
+      "sha256": "16b21db86e0729b1d69604421279d22a0de2e8abbda4bb5f96c6e473986e0788"
+    },
+    "bot-hq/web/public/assets/bot-team/Pixel/Pixel_celebrating.webp": {
+      "bytes": 1355428,
+      "sha256": "46e1f2c21c417ded7aadc70e2eba3c7b61df1cdde7e9a7cf425aa7a704b3dc13"
+    },
+    "bot-hq/web/public/assets/bot-team/Pixel/Pixel_profile.png": {
+      "bytes": 1003930,
+      "sha256": "27113b15b0fceb82279402499fbab79fedf86e478e25b2ee83eef2df170da55e"
+    },
+    "bot-hq/web/public/assets/bot-team/Pixel/Pixel_thinking.gif": {
+      "bytes": 1628400,
+      "sha256": "85e335f09e0d79f05692bcc405aa15abeb46d963ba3f1b0176d75b68571a42a5"
+    },
+    "bot-hq/web/public/assets/bot-team/Pixel/Pixel_thinking.webp": {
+      "bytes": 1412846,
+      "sha256": "d2a5923e99e511ab007706451c927f0e79f0f02c8dc5415cc61e4d847d39787d"
+    },
+    "bot-hq/web/public/assets/bot-team/Pixel/Pixel_working.gif": {
+      "bytes": 1202477,
+      "sha256": "18dce21412e8b01c16fe5a5b222164bc746793551b4762a8c1af414485b0940f"
+    },
+    "bot-hq/web/public/assets/bot-team/Pixel/Pixel_working.webp": {
+      "bytes": 982872,
+      "sha256": "0ba99442e8bc757b9dcc8224a579b76500fc4f25f5946c76f782bdab631b5de6"
+    },
+    "bot-hq/web/public/assets/bot-team/Scout/Scout_celebrating.gif": {
+      "bytes": 1585753,
+      "sha256": "cf4fc47f4c74338c237acf6d8a1c2f3714cc1f9a2b36175d9f1338964aa65313"
+    },
+    "bot-hq/web/public/assets/bot-team/Scout/Scout_celebrating.webp": {
+      "bytes": 1249462,
+      "sha256": "e24ae98dc78389546387b2380eb3772e6e815fe86039fdea7727cc27c23a9ee1"
+    },
+    "bot-hq/web/public/assets/bot-team/Scout/Scout_profile.png": {
+      "bytes": 1126329,
+      "sha256": "bc0dda0bab29e2708a0a4ba0d2f702e6ceba981425231c597a6cba3e104e7b01"
+    },
+    "bot-hq/web/public/assets/bot-team/Scout/Scout_thinking.gif": {
+      "bytes": 1685425,
+      "sha256": "b7a3e58669bd35d7f502d5d9ec20ad04de91704c3c6d97ecbf7f638196886aab"
+    },
+    "bot-hq/web/public/assets/bot-team/Scout/Scout_thinking.webp": {
+      "bytes": 1293758,
+      "sha256": "a9846ad907a0be54ba6a01058f38f097b7e1029f3ab60454049b9bfae8f546c8"
+    },
+    "bot-hq/web/public/assets/bot-team/Scout/Scout_working.gif": {
+      "bytes": 1325234,
+      "sha256": "35621e7e280aa9eeae8b8d90ee0e54fcddc8e0089a0b059559a9225630b77c5c"
+    },
+    "bot-hq/web/public/assets/bot-team/Scout/Scout_working.webp": {
+      "bytes": 962154,
+      "sha256": "cb9fe504f962f9870c6b3a8680760125e782907bac82c406ca332a7e4c4917c0"
+    },
+    "bot-hq/web/public/assets/icons/apps.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/arrow_down.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/arrow_down_scroll-white.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/arrow_down_scroll.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/chat_filled-white.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/chat_filled.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/check.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/chev_down.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/chev_right.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/clock.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/close.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/composer_plus.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/copy-white.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/copy.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/edit.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/file.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/mic.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/paperclip.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/plus.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/record.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/save.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/search.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/share.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/sidebar.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/slack.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/star.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/verified.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/voice_a.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/assets/icons/voice_b.svg": {
+      "bytes": 123,
+      "sha256": "4e5d38b8c91f71ade36228d4fe3823c1f18214cdc504da089574a346ebaefafa"
+    },
+    "bot-hq/web/public/favicon.svg": {
+      "bytes": 200,
+      "sha256": "7d7a062b1af57f72eedbf02450142a0a5cc5fdb0be54a3aab0e78e7e301040b1"
+    },
+    "bot-hq/web/src/App.tsx": {
+      "bytes": 5301,
+      "sha256": "4fe76d157afcfdeb46953a2ac32f09412620b70266dc4dbf49397eb1daf039e0"
+    },
+    "bot-hq/web/src/avatar/BotAvatar.tsx": {
+      "bytes": 2922,
+      "sha256": "a8cddda1cbed37f4b334c3c80deaf3a287662d719a9b11f03baac23306f1a595"
+    },
+    "bot-hq/web/src/avatar/shapes.gen.ts": {
+      "bytes": 315,
+      "sha256": "db4551a6e96a96f049cf929a463a3351e7222b43bdb8e637a328e669152facc5"
+    },
+    "bot-hq/web/src/components/ActivityLine.tsx": {
+      "bytes": 3978,
+      "sha256": "30de40f0472b8b9be792318bbb5c208c156a732b918df485530331a16729ec36"
+    },
+    "bot-hq/web/src/components/AxonConnectors.tsx": {
+      "bytes": 15624,
+      "sha256": "ba96717c98e05138191a8ab4d12e012ee3a270069a5e0372adbd145d9bf586e1"
+    },
+    "bot-hq/web/src/components/AxonContacts.tsx": {
+      "bytes": 33667,
+      "sha256": "1b30ab24e77dd0a76d3f6fce73627b76c2c2aab464ad3fdcaa2eb5fb2449298d"
+    },
+    "bot-hq/web/src/components/AxonFilePreview.tsx": {
+      "bytes": 2324,
+      "sha256": "be226aea6f6bd35201110b1e1e7aa20896c5f9b332693dbac7aba65a25823aab"
+    },
+    "bot-hq/web/src/components/AxonInspector.tsx": {
+      "bytes": 27323,
+      "sha256": "13c50ed79eee996f0fea1d59f74314df25697cf64b5438ef5461e462ea8f9cb6"
+    },
+    "bot-hq/web/src/components/AxonMarketing.tsx": {
+      "bytes": 25584,
+      "sha256": "add10920ecffbd225b4f459a8a456df087e16ed4b7a7b1248565700eccd3d7cf"
+    },
+    "bot-hq/web/src/components/AxonModelStatus.tsx": {
+      "bytes": 2423,
+      "sha256": "1800cfc2c1826e42803c7d7ac5497edc2137fcb29dbb4a6b8ccd3bfa870e7395"
+    },
+    "bot-hq/web/src/components/AxonNews.tsx": {
+      "bytes": 15299,
+      "sha256": "abc88ba61d6c5a1de5cd35a5878785dfb9557a2d60c23d4fc3edb2ff2e5f1299"
+    },
+    "bot-hq/web/src/components/AxonPrimitives.tsx": {
+      "bytes": 2468,
+      "sha256": "720865f5941d8b93cc0d2eb89f54957441d9de1578e272af9609a87c2b5ef847"
+    },
+    "bot-hq/web/src/components/AxonR3Common.tsx": {
+      "bytes": 3201,
+      "sha256": "cee2336c93e61127bd40ba2d844791a9011ec31f9d5b8e3354c3d26852bac546"
+    },
+    "bot-hq/web/src/components/AxonR3Workspace.tsx": {
+      "bytes": 3423,
+      "sha256": "c467147956cf3763df26a5af3f1f2f929801a74b1820340a3b41e61518d17f98"
+    },
+    "bot-hq/web/src/components/AxonSettings.tsx": {
+      "bytes": 30319,
+      "sha256": "a00875447ea9d0abc88f52dacab52df48b6df56e65fdcd5add34ff091d865adc"
+    },
+    "bot-hq/web/src/components/AxonTracker.tsx": {
+      "bytes": 19102,
+      "sha256": "5e716d639c6e7c91689207d6d8130769d5d672930fb947f4d9eca7bf534d9e66"
+    },
+    "bot-hq/web/src/components/AxonWorkspacePages.tsx": {
+      "bytes": 47215,
+      "sha256": "aff3757792376b109248ba1f46e3d6c19f7b6507dbfbdacdc852ae4a446fbca7"
+    },
+    "bot-hq/web/src/components/BotTeamAvatar.tsx": {
+      "bytes": 2689,
+      "sha256": "5c69dd674926d4d5802a3cc6c6ae7993ae1b84dbe3f5fdbff5a6b0b7f691a7a5"
+    },
+    "bot-hq/web/src/components/ChatView.tsx": {
+      "bytes": 3185,
+      "sha256": "226c52345b2930b1ae54fc188e87eeec6efe94780e5605d23d9674de90cfd202"
+    },
+    "bot-hq/web/src/components/Composer.tsx": {
+      "bytes": 6470,
+      "sha256": "e5ee308ddfb5b029341fb3126e6e0ccf8eb9b3a3f65939973ba669914e955b35"
+    },
+    "bot-hq/web/src/components/ComputerViewer.tsx": {
+      "bytes": 16971,
+      "sha256": "b5f0b31dedec16925b539e5328b37bc1b4fcd1baf8d6958bed1c124f824309f4"
+    },
+    "bot-hq/web/src/components/DetailsPanel.tsx": {
+      "bytes": 7779,
+      "sha256": "9ffa7a2ab4326659dc9dc128433562208664c28d27050ae556e39a7c8deccf07"
+    },
+    "bot-hq/web/src/components/EngineSettings.tsx": {
+      "bytes": 10089,
+      "sha256": "702a1bd23efa1853c5152414967bca7ca1c15ffd2680bd07cbce0bc9bc3f3184"
+    },
+    "bot-hq/web/src/components/Icon.tsx": {
+      "bytes": 3157,
+      "sha256": "f692004f9abb8238f15f64c35ffab1858ebaee8f0f6a0d06b121214b80f5ca60"
+    },
+    "bot-hq/web/src/components/LocalResearch.tsx": {
+      "bytes": 10636,
+      "sha256": "5247feeb2e0465a2fa527105dbbfe88b1d0b3668a5151eae1b71605450d19101"
+    },
+    "bot-hq/web/src/components/LocalTextApp.tsx": {
+      "bytes": 50621,
+      "sha256": "cb8894ccb70f58a0e5289227743c899764554a88b0cfa86a232fc606b288ec59"
+    },
+    "bot-hq/web/src/components/Markdown.tsx": {
+      "bytes": 845,
+      "sha256": "bbb488627295a26990e480a60c9a68803de42d1142ff5baf35dc47ee10c81120"
+    },
+    "bot-hq/web/src/components/MembersCard.tsx": {
+      "bytes": 3130,
+      "sha256": "fc8e6c4edb55963f9ab65fee92b9e16221a374519b861b8e25608821f3720a8d"
+    },
+    "bot-hq/web/src/components/Menu.tsx": {
+      "bytes": 1504,
+      "sha256": "a4faa8a51fc3e2398ab4a7551f53e19e3d013a3b5b24af368d135f65dae8354c"
+    },
+    "bot-hq/web/src/components/Sidebar.tsx": {
+      "bytes": 7271,
+      "sha256": "ffed35f027958adb42e3c28fdabb35825d80b976bba6ea79263838822cc49c84"
+    },
+    "bot-hq/web/src/components/SignIn.tsx": {
+      "bytes": 3118,
+      "sha256": "022d8fe68b7d0723fd7f8e4dfb6f51504b23b066e0f39d071066867347ad28ea"
+    },
+    "bot-hq/web/src/components/ToolkitLogo.tsx": {
+      "bytes": 740,
+      "sha256": "a17f3b0b260d983ee718b81eb1bd9cfc6c8851f1f9b1e2932198beaade10f829"
+    },
+    "bot-hq/web/src/components/Transcript.tsx": {
+      "bytes": 12996,
+      "sha256": "a1695af09349c67281630fb267cfb9a0381890a823bad868f8b195d40e8a4dba"
+    },
+    "bot-hq/web/src/components/VoiceCallBar.tsx": {
+      "bytes": 5985,
+      "sha256": "84c193dca330960957db94265b6789c7baa7579f719ab66f3046f5876fa2626b"
+    },
+    "bot-hq/web/src/components/VoiceSettings.tsx": {
+      "bytes": 4922,
+      "sha256": "ff6c327ec9f602c629923b1d5b79c07fe9ea477f9dc336d7ee3bfd589fac9e99"
+    },
+    "bot-hq/web/src/components/cards/Cards.tsx": {
+      "bytes": 10150,
+      "sha256": "277777122f5f9485857d43553eeb476b55c4f6b251c37909e87350eb6c9a6fec"
+    },
+    "bot-hq/web/src/components/config/AppSettings.tsx": {
+      "bytes": 14101,
+      "sha256": "7ffcf838a844ee99df3c5e3f097de0bc0bfc4214a94e29b82ee9c7527f4b9ca1"
+    },
+    "bot-hq/web/src/components/config/BotSettingsModal.tsx": {
+      "bytes": 23136,
+      "sha256": "39887afb35a695f111d813a55c5909595896cb5fec3297913a9805622baccac5"
+    },
+    "bot-hq/web/src/components/config/ConfigLayer.tsx": {
+      "bytes": 510,
+      "sha256": "37201911a3b3781fbf4eb35d7a1e62a35098b32ddb6e7ee06ae5ec080da1a07e"
+    },
+    "bot-hq/web/src/components/config/LibraryTab.tsx": {
+      "bytes": 5207,
+      "sha256": "ea0a9b3e3453bab891536b0ef6f1258ca038a33e25a10d6f1d8dae7ef9d0061c"
+    },
+    "bot-hq/web/src/components/config/TasksView.tsx": {
+      "bytes": 6341,
+      "sha256": "09f7ad33fc07555c341fbe0d45d03156eb90e6e97238b001ea19ecb9726ecccd"
+    },
+    "bot-hq/web/src/components/config/glyphs.tsx": {
+      "bytes": 3548,
+      "sha256": "74ab903e64c5d1d34c92b03e79e126d93659e02fa3cb6d6253b07c62fc7547de"
+    },
+    "bot-hq/web/src/components/config/ui.tsx": {
+      "bytes": 3751,
+      "sha256": "570e94847e11f97485ef713cdf782273953317961566e567050b1aa7d0e12c75"
+    },
+    "bot-hq/web/src/components/modals/ConnectAppsModal.tsx": {
+      "bytes": 11141,
+      "sha256": "c20d2f72bc9bdaee21e472bb06e92341c749e23936d95eaddf6d532ee7cddc42"
+    },
+    "bot-hq/web/src/components/modals/CreateBotModal.tsx": {
+      "bytes": 4949,
+      "sha256": "d0bdf1d864d4352324fd54f4a0ec017b922a0667f6133ce7a4fcdeae853efd83"
+    },
+    "bot-hq/web/src/components/modals/CreateGroupModal.tsx": {
+      "bytes": 3089,
+      "sha256": "f5149b11a3ffab82020f3cff9cbae78e0fbb5e404ccef31be8df606b6ac68ff0"
+    },
+    "bot-hq/web/src/components/modals/Modal.tsx": {
+      "bytes": 1285,
+      "sha256": "cdcd345ee96c210aaa1173cbefdd4b3f64233a141126519a2f0a7d1575037c65"
+    },
+    "bot-hq/web/src/components/modals/SearchModal.tsx": {
+      "bytes": 2988,
+      "sha256": "e6a597288e297838d258f41d522f0c453071ba646ae234440c636cde044acf6f"
+    },
+    "bot-hq/web/src/components/useAxonVoice.ts": {
+      "bytes": 6315,
+      "sha256": "f0d5ae55febcbca1a5e1a92a6d7a53d35b68a858a2fb8313981f8ad54f4e7539"
+    },
+    "bot-hq/web/src/components/useBotTeamActivity.ts": {
+      "bytes": 2026,
+      "sha256": "7a5bc16db25a79b688531cdd4630a2c4a101d1f539a4022c450f8d4bfeec1838"
+    },
+    "bot-hq/web/src/configStore.ts": {
+      "bytes": 3196,
+      "sha256": "b15653d3e9d5484144ec11c6c657ef715a9917b49d364c1132268b9e27bb4d41"
+    },
+    "bot-hq/web/src/dev/fixtures.ts": {
+      "bytes": 7559,
+      "sha256": "70217cf5b6323641f955bb80f3b6a5eaf05642962d3e1d180c166781404f51f0"
+    },
+    "bot-hq/web/src/lib/api.ts": {
+      "bytes": 3703,
+      "sha256": "d27ed082d1b59ad0082756583b5438ae916b4acb68bbf7c3e4df9703901223f8"
+    },
+    "bot-hq/web/src/lib/axon-native.ts": {
+      "bytes": 853,
+      "sha256": "722e10fa7d8f3211a44ea18d27011dc34933b9c9b7cb9bc7617f42ca24bc0f54"
+    },
+    "bot-hq/web/src/lib/axon-news-types.ts": {
+      "bytes": 3039,
+      "sha256": "15a68da41b0c898e438484545a7edb8df44369f34d0e658c82c227db34d75d57"
+    },
+    "bot-hq/web/src/lib/axon.ts": {
+      "bytes": 4319,
+      "sha256": "081629717ba44f84ffa133ab5e7d12021903db955cdfbc52a592e843d4bdcd0a"
+    },
+    "bot-hq/web/src/lib/colors.ts": {
+      "bytes": 2461,
+      "sha256": "176e9373ddcba89fd4d936c48de97b2a71ab629a1eccb59a5ca8b95ddbbe7ceb"
+    },
+    "bot-hq/web/src/lib/computer.ts": {
+      "bytes": 1625,
+      "sha256": "7783f336d0fed19ce0ac81999c6f5d513f8e7fbba12cfd43e8d6dde0a180f2ce"
+    },
+    "bot-hq/web/src/lib/configApi.ts": {
+      "bytes": 4699,
+      "sha256": "3e2e267d298497064db5c076765f402e1321691a4e118e8f31d994a8d5e40636"
+    },
+    "bot-hq/web/src/lib/dictation.ts": {
+      "bytes": 877,
+      "sha256": "2b047e4150e1112fd5ebdb250a232a1247a2ed91fa8e6af25ff6f92485edf213"
+    },
+    "bot-hq/web/src/lib/events.ts": {
+      "bytes": 1543,
+      "sha256": "869fe2acb3a0dd3440edf12058ab9bf3aed9d13021c74126068a4debae3596a5"
+    },
+    "bot-hq/web/src/lib/phrases.ts": {
+      "bytes": 3861,
+      "sha256": "76dc9a326d0b58cac6f054d0d1eb2891b4446485e8674b3f7b1b212a3fa72866"
+    },
+    "bot-hq/web/src/lib/time.ts": {
+      "bytes": 1766,
+      "sha256": "20861aa8b629ba2ee0848d3ec2aca7966c84346fb5687196e59ad63966d25b1b"
+    },
+    "bot-hq/web/src/main.tsx": {
+      "bytes": 549,
+      "sha256": "5cd39da5fd0b99a9b8369e68924c12a3f7f435d52a66fa68158cbf084184a7ba"
+    },
+    "bot-hq/web/src/novnc.d.ts": {
+      "bytes": 680,
+      "sha256": "0cf76835060351bb1067373b1d19f7f9df800dd816c1eb439dc9d151ce83e59c"
+    },
+    "bot-hq/web/src/store.ts": {
+      "bytes": 7135,
+      "sha256": "4b496914f4c9f595d7c9b908af9e01dcbb9139e7fe08acd1bccfcf92f8b71f7e"
+    },
+    "bot-hq/web/src/styles/axon-r3.css": {
+      "bytes": 8950,
+      "sha256": "6ae787b0e133f16b8327b438fb12dfcad4b09d8b77f206b2cabb15209901b417"
+    },
+    "bot-hq/web/src/styles/axon.css": {
+      "bytes": 28467,
+      "sha256": "665c44c9c5d15a63a8db5971c5ba9d1f7c0fd156193e758d0c55e754d6aec864"
+    },
+    "bot-hq/web/src/styles/base.css": {
+      "bytes": 6529,
+      "sha256": "62f9e8e0069327e58dc5a1dd5effe9e74cf93e1093bcf608fee680033d4444e4"
+    },
+    "bot-hq/web/src/styles/bot-team.css": {
+      "bytes": 1208,
+      "sha256": "9c48690285a36b48f88722e1728ce1f621e2e9c5d94ddc738fff5a984209d8c0"
+    },
+    "bot-hq/web/src/styles/cards.css": {
+      "bytes": 5518,
+      "sha256": "3f65b64b54055c5afbb72ed3c56befa1af6e8742ae1266fc37fc68727a126a04"
+    },
+    "bot-hq/web/src/styles/chat.css": {
+      "bytes": 18131,
+      "sha256": "298d7ac911f1d8379d23f5a6724f08f7e4ba25412cc6f5ce3c71937f85cc8a8d"
+    },
+    "bot-hq/web/src/styles/config.css": {
+      "bytes": 20286,
+      "sha256": "1c360d43b36cb58519400f0c58e7eb796eb5db4bfd55fe16c45c89cac4eb5422"
+    },
+    "bot-hq/web/src/styles/details.css": {
+      "bytes": 9242,
+      "sha256": "a882dec8a9b2d6e81f9a7dcf1c912cf75e02a38fcd6dcbfd960ecd30245f9411"
+    },
+    "bot-hq/web/src/styles/local-research.css": {
+      "bytes": 8619,
+      "sha256": "12dbf807d79597079a088b960afda002e06ab39184d4fe7f4c0b616c21ae1249"
+    },
+    "bot-hq/web/src/styles/local-text.css": {
+      "bytes": 12630,
+      "sha256": "b4a6b6e265fd64d3bc897b20ee8f710f7df99d5c63a2350d5ac1a190a116312c"
+    },
+    "bot-hq/web/src/styles/modals.css": {
+      "bytes": 12937,
+      "sha256": "373ce006a3c8269350eacfb22993eed57dd4bbea6c202169d20fb3029bb0029f"
+    },
+    "bot-hq/web/src/styles/shell.css": {
+      "bytes": 5163,
+      "sha256": "98d54af6999f8af10edfc65e7e40a93dde6ebc07dbd4346af4a3a986f191b1a6"
+    },
+    "bot-hq/web/src/styles/tokens.css": {
+      "bytes": 4674,
+      "sha256": "e7efc7826bf241ed83db612378c4cd767bc3578c35dac3e98d169b8dbe110905"
+    },
+    "bot-hq/web/src/styles/viewer.css": {
+      "bytes": 10629,
+      "sha256": "76c71497043774c0c0555146f8f7caae38c6600f7b6378748b2c2a5ef24eb06f"
+    },
+    "bot-hq/web/src/styles/voice.css": {
+      "bytes": 5438,
+      "sha256": "e6670027846b0e773c58265770884c823532cb2cf13332167a89c6cd0f5d81eb"
+    },
+    "bot-hq/web/src/styles/workspace.css": {
+      "bytes": 15939,
+      "sha256": "87e842c24280fb25bad80b62461f6ef3aa8a013a5d206a661b5ec79fc7563447"
+    },
+    "bot-hq/web/src/voice/api.ts": {
+      "bytes": 3151,
+      "sha256": "33f4ed143875541d80dc0e057100744bccd72b1a62b27f50fb6b687eb5f3c644"
+    },
+    "bot-hq/web/src/voice/audio.ts": {
+      "bytes": 8068,
+      "sha256": "039ad0c5f03d09c499df10f3611270e727a7aa3d86236200c6ea3561b492c247"
+    },
+    "bot-hq/web/src/voice/call.ts": {
+      "bytes": 19956,
+      "sha256": "54337d25f55735976c60d6b208501a2df98afbb3d7755b2c1d95999bcf89bf0b"
+    },
+    "bot-hq/web/src/voice/dictation.ts": {
+      "bytes": 4551,
+      "sha256": "f1f6b746a941b6779a2c736e0170f12d57c7b1ebb9cf4636c31c8b7a9c1a2cdf"
+    },
+    "bot-hq/web/tests/axon-settings-fixture.html": {
+      "bytes": 208,
+      "sha256": "02841e187bc607a62af7ccae9e90325b0f1db9c576fc370e48d2c8996b72a1ab"
+    },
+    "bot-hq/web/tests/axon-settings-fixture.tsx": {
+      "bytes": 594,
+      "sha256": "8df2fb5318bd4067eac50258760ec103842cb760ecff014a2ccb91e9cd25b49e"
+    },
+    "bot-hq/web/tests/axon-settings-test.mjs": {
+      "bytes": 9207,
+      "sha256": "91d6e1f392c3e87366aa8b5d53ecb124cf00e456215812248bd60270600cb31e"
+    },
+    "bot-hq/web/tsconfig.json": {
+      "bytes": 566,
+      "sha256": "34b69dc40dd03cb700d59d7f69dcf48058a64d6bd717d91e37e0ed22b315496f"
+    },
+    "bot-hq/web/vite.config.ts": {
+      "bytes": 594,
+      "sha256": "b24e79616d3ae80d5b0ecc7cf5ae6ccbf779ef41a25f3d3b6f8e23af1542859b"
+    },
+    "docs/axon-cros-native-bridge.md": {
+      "bytes": 5269,
+      "sha256": "6a09e7e30b9e97b03fb615f7af3ec6dd18fffa218c4f96c144dd9def2c991607"
+    },
+    "docs/axon-cros-r3-backend.md": {
+      "bytes": 5578,
+      "sha256": "41a1cadb25965a49c39baf5a6a05bc80725f93ea6cbacea4d185365111cd88be"
+    },
+    "docs/axon-cros-r3-news-sources.md": {
+      "bytes": 6999,
+      "sha256": "220baed01e3209e032f445f4936d6187ff6124879b956f7f7442bccfba7d63b0"
+    },
+    "docs/connector-setup.md": {
+      "bytes": 4452,
+      "sha256": "200a6c1c736d6b1cb39ea015c0e4b8438c79c0be9c75aae6ee7c6b27fe079d08"
+    },
+    "docs/local-oss-release.md": {
+      "bytes": 6759,
+      "sha256": "b20774f8d7117881a3de581e9b32a178a7de6285b02275ac413f5d141a17273a"
+    },
+    "docs/research-provenance.md": {
+      "bytes": 2254,
+      "sha256": "e143899786b5a4f0a09a59b8632fbd721314b59a550b455dcef0acbd468f9de4"
+    },
+    "mac-wrapper/Package.swift": {
+      "bytes": 483,
+      "sha256": "d94a06c2565e3713f754d17d6675f4f8d3f6b878b835762ba56b556df2f782d8"
+    },
+    "mac-wrapper/Resources/AxonCROS_Symbol.png": {
+      "bytes": 691914,
+      "sha256": "078236459a72de47ab97d280ccfb03e7e5ce913e41a991c046915e413f83e143"
+    },
+    "mac-wrapper/Sources/BotHQ/ContactOAuthReceiver.swift": {
+      "bytes": 4940,
+      "sha256": "06caa5ef3d1040bee380a4a0ad217d0c9371b335751c0a20c67579cc62095eca"
+    },
+    "mac-wrapper/Sources/BotHQ/ContactSecrets.swift": {
+      "bytes": 2488,
+      "sha256": "74352d204ae499b699154e59cbe8045c7b33ed8e535de2abc9028f028d6aaf33"
+    },
+    "mac-wrapper/Sources/BotHQ/LocalInstallation.swift": {
+      "bytes": 1895,
+      "sha256": "164d5fe0b5935902d32a93591171127196535d672b461546234ccddcd6b0e793"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeBridge.swift": {
+      "bytes": 22037,
+      "sha256": "48465cffa9ac1417f9c83e28bfb41ddffaf03bbe0ba18ab80cdd70f143c5e827"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeConnectorCredentials.swift": {
+      "bytes": 3712,
+      "sha256": "44421732abbcae58e865dc19e52633564e7a7f38e8664502a4b48c59f4d39825"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeContactHandoff.swift": {
+      "bytes": 2454,
+      "sha256": "686fd95d2dafee98cc813a96950ee29248996a1ebaf6e814d47f526a8e7644e8"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeContacts.swift": {
+      "bytes": 10216,
+      "sha256": "04c6b69596810ee1099801a8bbaad855033cc6460d392f735ef61e37fe574e2c"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeGoogleContacts.swift": {
+      "bytes": 25431,
+      "sha256": "b939fa5f6f53ce834e8a9abe8b3ce5e823f8beb0b4ac8d2a73c81724a06490a5"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeGoogleWorkspace.swift": {
+      "bytes": 24629,
+      "sha256": "538a58819da7bb06c645efa3b6767b77bf0bd8d97e2ab591a3c9e724191743c2"
+    },
+    "mac-wrapper/Sources/BotHQ/NativePanelCompletion.swift": {
+      "bytes": 1576,
+      "sha256": "dc39518ef93e1d38a78c3c244db573aec8554cadb83a016ae827fc0c31c7d297"
+    },
+    "mac-wrapper/Sources/BotHQ/NativePanels.swift": {
+      "bytes": 10544,
+      "sha256": "eac0ac27f7b54ee7df79ca72b631cd8243863d4f1a24f348142f929a803f8a76"
+    },
+    "mac-wrapper/Sources/BotHQ/NativePathSelection.swift": {
+      "bytes": 2723,
+      "sha256": "62ccb146f3539ec7c14cc4d38a0f290bb47df2303f1c3accc850e272dd04de0e"
+    },
+    "mac-wrapper/Sources/BotHQ/NativePermissionRequest.swift": {
+      "bytes": 1535,
+      "sha256": "e640ec4bb556ce2ce50ed64a1af84d256fcbc36eaa2bc81442048c4c7855ae62"
+    },
+    "mac-wrapper/Sources/BotHQ/NativePickerProcess.swift": {
+      "bytes": 6681,
+      "sha256": "41a4a1090335e9c47710cc957d1c6419a5b3214e1c36505cff47491f3709ce6c"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeStore.swift": {
+      "bytes": 11737,
+      "sha256": "9ad93feb1550a502d0fb047b7f5a5db023292d7078b37e74a5eb7245f9b37a39"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeVerificationProfile.swift": {
+      "bytes": 4853,
+      "sha256": "7d4974a502db6a9ddc9a8f1a1d1aa1759206786aaa55393ccfa207bd5c2be1dc"
+    },
+    "mac-wrapper/Sources/BotHQ/main.swift": {
+      "bytes": 32202,
+      "sha256": "ed666f30da89d2a54046b191540390f8fc1063bf3ee8a3b8d064c53939418bb0"
+    },
+    "mac-wrapper/Sources/NativeFilePicker/main.swift": {
+      "bytes": 2857,
+      "sha256": "95cc77f2b72e24d7ccb78013acd57cda4c2d19e6a122a201b78b7153d6ac9c14"
+    },
+    "mac-wrapper/Sources/NativePanelFactory/NativePanelFactory.m": {
+      "bytes": 1096,
+      "sha256": "81253c3abb967f6ad331e6dfb1b0c663e016d03c3f7f85b1689ae919c3a485d3"
+    },
+    "mac-wrapper/Sources/NativePanelFactory/include/NativePanelFactory.h": {
+      "bytes": 588,
+      "sha256": "ca5b22fbbf19f9ab10ac3d3268ec1916fae3359ce3af240180e566eda35f1b4c"
+    },
+    "mac-wrapper/script/build.sh": {
+      "bytes": 5106,
+      "sha256": "882cc437a4e362644c7204e1079052518b8a223f6da150840a4edb6a8d2a873c"
+    },
+    "mac-wrapper/script/test_local_installation.sh": {
+      "bytes": 328,
+      "sha256": "03d0e8b45cc1a02ef2ae2b7b5eca0cafefddc4a3bb5816dda0b117daffb55d22"
+    },
+    "mac-wrapper/script/test_native_contact_handoff.sh": {
+      "bytes": 352,
+      "sha256": "3ab37e44bd58720f32e66ca3f0b15b76effbfd88780fe29adbc7c3cc06e9228b"
+    },
+    "mac-wrapper/script/test_native_contacts.sh": {
+      "bytes": 1205,
+      "sha256": "c409db946a45851ba9281a5803f9a3dbdfd9a27e7c6d48d60a2fbf779a0ae1df"
+    },
+    "mac-wrapper/script/test_native_panels.sh": {
+      "bytes": 517,
+      "sha256": "f4ca044848e8fc4ccb44fbf79b713b5f7c72d58c0f67b653ed5c5a0ceeec86a7"
+    },
+    "mac-wrapper/script/test_native_path_selection.sh": {
+      "bytes": 368,
+      "sha256": "98d0252c90628d6913958e0f63ffb57b1f34bd787817071bb58127338ed64c63"
+    },
+    "mac-wrapper/script/test_native_permission.sh": {
+      "bytes": 343,
+      "sha256": "8fbf76aebc68ba2d4f3e10d996c88f4ca71928f3c8926269c9e83affacaf7aab"
+    },
+    "mac-wrapper/script/test_native_picker_process.sh": {
+      "bytes": 326,
+      "sha256": "2681dfdc767e1cd3132b5b6bef78332ee8aa200377df8059d828e29558ace833"
+    },
+    "mac-wrapper/script/test_native_verification.sh": {
+      "bytes": 358,
+      "sha256": "2feeb856e1d0d928ff5d3f29a707c8cc0034d5b8f71e18163a9f9be3d4a69b60"
+    },
+    "mac-wrapper/script/test_native_workspace.sh": {
+      "bytes": 1193,
+      "sha256": "29c98f56b6390daefc759b1db67f12be33cae3cd90b4ab7e70c73cd0d14497a7"
+    },
+    "mac-wrapper/tests/LocalInstallationTests.swift": {
+      "bytes": 1394,
+      "sha256": "08913375bee466570c37cb5011057e785d0ea99add9b6b75ffeb09e74b5bc196"
+    },
+    "mac-wrapper/tests/NativeContactHandoffTests.swift": {
+      "bytes": 2973,
+      "sha256": "52d7620d6f2e398778f0c63c5c2b3f982677f27ffef2ff27fbec8bec5345e125"
+    },
+    "mac-wrapper/tests/NativeContactsTests.swift": {
+      "bytes": 12127,
+      "sha256": "f2819a1e62d4d10f25961d63af0717ce5bab771d436b7a7d7c7e3a4c67d575b3"
+    },
+    "mac-wrapper/tests/NativePanelCompletionTests.swift": {
+      "bytes": 3593,
+      "sha256": "faf850f179931b0a4c7554db453a93b7719848c17046d649ad5a8290a33a615e"
+    },
+    "mac-wrapper/tests/NativePanelFactoryTests.m": {
+      "bytes": 1770,
+      "sha256": "e5655973ea2dd047d84845d85775cf902c0b68a2fd84eb5e11000650d57cee56"
+    },
+    "mac-wrapper/tests/NativePathSelectionTests.swift": {
+      "bytes": 4134,
+      "sha256": "b05e49c031c8afa538a10ca0b63286db296f56ab274607fef5dfbd54c793612a"
+    },
+    "mac-wrapper/tests/NativePermissionRequestTests.swift": {
+      "bytes": 2508,
+      "sha256": "122ccfd9e14f40b4d780345c93e387046fadfe38a2963953dfc611f894726f42"
+    },
+    "mac-wrapper/tests/NativePickerProcessTests.swift": {
+      "bytes": 5857,
+      "sha256": "71235037b56e47fb2bf4e3a6b4228b7c307fb4f96f72acdbecdbedaa90636517"
+    },
+    "mac-wrapper/tests/NativeVerificationProfileTests.swift": {
+      "bytes": 5066,
+      "sha256": "8a3610503373f7952882a0f38d28f812387a4a7918b9a69e94580c3dabe845c9"
+    },
+    "mac-wrapper/tests/NativeWorkspaceTests.swift": {
+      "bytes": 12283,
+      "sha256": "f99b50449bb36ce883cfb349e610fba67b7c83c8b301001b64903629ef86a9ab"
+    },
+    "mortgage-bot-team/00-START-HERE.md": {
+      "bytes": 5648,
+      "sha256": "3ea1f1b93e48cc6a5a72d8f9ac098e2dd748a239fdd35cb70eedfb27a43b20a7"
+    },
+    "mortgage-bot-team/01-team-operating-model.md": {
+      "bytes": 8014,
+      "sha256": "a41ad19b8e941fa69fd7d66adba6d8d452e9c704bf4e7f3a5ac091d45f798ebe"
+    },
+    "mortgage-bot-team/02-loan-workflow.md": {
+      "bytes": 30706,
+      "sha256": "e97195bb1cf60c15b0ffbae69dc3bc0f5bbaf563e0b452cc50571e1ab59a6fff"
+    },
+    "mortgage-bot-team/03-controls-and-sources.md": {
+      "bytes": 24275,
+      "sha256": "8d3be6db4f3841bd499d002b33b9f159d91adf62bfe87c45d7e790488c3fd6b5"
+    },
+    "mortgage-bot-team/04-bot-profiles.md": {
+      "bytes": 35400,
+      "sha256": "30bd8bef6a5d666cfd70d28bd1c43247ad3ce66ffd306eff658d572d271b2f2a"
+    },
+    "mortgage-bot-team/05-acceptance-tests.md": {
+      "bytes": 9639,
+      "sha256": "b01ee0cc55cffe1d997e0a858929aa2c33f81bae48181c59273e68e765ca42e2"
+    },
+    "mortgage-bot-team/06-deployment-plan.md": {
+      "bytes": 6509,
+      "sha256": "ea82e028fde61dd3f3e51826ea48d4aba460c70e2d15c5468ce72facc8aa961a"
+    },
+    "mortgage-bot-team/07-platform-training/00-START-HERE.md": {
+      "bytes": 4108,
+      "sha256": "665d7dedfd8ec2b3a46f15c2b956b6986e59b08f09abc932de604ed2bfabcb38"
+    },
+    "mortgage-bot-team/07-platform-training/01-loan-factory-arive.md": {
+      "bytes": 24099,
+      "sha256": "7b67151e08ad8aba976fe21b6cf14964eca91f88106f377918899b93c503ef25"
+    },
+    "mortgage-bot-team/07-platform-training/02-lendingpad-encompass.md": {
+      "bytes": 20425,
+      "sha256": "b9f78f4241c3e696d0cb3a1513924c642879be5d8cf78c6e4fa77d4a2c5de9f0"
+    },
+    "mortgage-bot-team/07-platform-training/03-sonar-uwm-rocket.md": {
+      "bytes": 15462,
+      "sha256": "c73c08dba8e7986b3655c45b7b4ae272c1c9045cd2adb7ebf1d82385e3c9a800"
+    },
+    "mortgage-bot-team/07-platform-training/04-platform-skill.md": {
+      "bytes": 6783,
+      "sha256": "330fdc7512b477df0115319ff6fd3a007c44a5d7438ee0753be8f31bf15a004c"
+    },
+    "script/build_and_run.sh": {
+      "bytes": 4289,
+      "sha256": "2cda14f3d860081c6d242173a1b269fb8f4b2aa043e74a3ca76831fe7d4944bf"
+    },
+    "script/package_macos.sh": {
+      "bytes": 6652,
+      "sha256": "a106e30df1389e7f679fd7515cccd5fba8f723d00e50aaf31efdb8c590264351"
+    },
+    "script/prepare-source-release.py": {
+      "bytes": 11872,
+      "sha256": "fe2e252336cd927f7bcd0d6e64670c8406933cfaddcb3f6662b51efca9dccec8"
+    },
+    "script/setup-local.mjs": {
+      "bytes": 2650,
+      "sha256": "373b832d5d4a9115c54e64d7cd720168fec37716b0b79206b8f777b152e6003b"
+    },
+    "script/test_source_release.py": {
+      "bytes": 7820,
+      "sha256": "1e111a2304415b38babcf7347e5531ed34420b03fa9dba15e66f09ee48d28dd3"
+    }
+  },
+  "generatedPaths": [
+    "bot-hq/web/public/assets/icons/apps.svg",
+    "bot-hq/web/public/assets/icons/arrow_down.svg",
+    "bot-hq/web/public/assets/icons/arrow_down_scroll-white.svg",
+    "bot-hq/web/public/assets/icons/arrow_down_scroll.svg",
+    "bot-hq/web/public/assets/icons/chat_filled-white.svg",
+    "bot-hq/web/public/assets/icons/chat_filled.svg",
+    "bot-hq/web/public/assets/icons/check.svg",
+    "bot-hq/web/public/assets/icons/chev_down.svg",
+    "bot-hq/web/public/assets/icons/chev_right.svg",
+    "bot-hq/web/public/assets/icons/clock.svg",
+    "bot-hq/web/public/assets/icons/close.svg",
+    "bot-hq/web/public/assets/icons/composer_plus.svg",
+    "bot-hq/web/public/assets/icons/copy-white.svg",
+    "bot-hq/web/public/assets/icons/copy.svg",
+    "bot-hq/web/public/assets/icons/edit.svg",
+    "bot-hq/web/public/assets/icons/file.svg",
+    "bot-hq/web/public/assets/icons/mic.svg",
+    "bot-hq/web/public/assets/icons/paperclip.svg",
+    "bot-hq/web/public/assets/icons/plus.svg",
+    "bot-hq/web/public/assets/icons/record.svg",
+    "bot-hq/web/public/assets/icons/save.svg",
+    "bot-hq/web/public/assets/icons/search.svg",
+    "bot-hq/web/public/assets/icons/share.svg",
+    "bot-hq/web/public/assets/icons/sidebar.svg",
+    "bot-hq/web/public/assets/icons/slack.svg",
+    "bot-hq/web/public/assets/icons/star.svg",
+    "bot-hq/web/public/assets/icons/verified.svg",
+    "bot-hq/web/public/assets/icons/voice_a.svg",
+    "bot-hq/web/public/assets/icons/voice_b.svg",
+    "bot-hq/web/public/favicon.svg",
+    "bot-hq/web/src/avatar/shapes.gen.ts"
+  ],
+  "published": false,
+  "research": {
+    "notice": "Project-authored dated summaries, profiles and synthetic scenarios; not a redistribution license for linked third-party sources. See docs/research-provenance.md.",
+    "paths": [
+      "mortgage-bot-team/00-START-HERE.md",
+      "mortgage-bot-team/01-team-operating-model.md",
+      "mortgage-bot-team/02-loan-workflow.md",
+      "mortgage-bot-team/03-controls-and-sources.md",
+      "mortgage-bot-team/04-bot-profiles.md",
+      "mortgage-bot-team/05-acceptance-tests.md",
+      "mortgage-bot-team/06-deployment-plan.md",
+      "mortgage-bot-team/07-platform-training/00-START-HERE.md",
+      "mortgage-bot-team/07-platform-training/01-loan-factory-arive.md",
+      "mortgage-bot-team/07-platform-training/02-lendingpad-encompass.md",
+      "mortgage-bot-team/07-platform-training/03-sonar-uwm-rocket.md",
+      "mortgage-bot-team/07-platform-training/04-platform-skill.md"
+    ]
+  },
+  "schema": 1,
+  "transformedPaths": [
+    "bot-hq/README.md"
+  ]
+}

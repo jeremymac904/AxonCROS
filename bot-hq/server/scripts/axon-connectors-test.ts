@@ -1,0 +1,62 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { Hono } from 'hono';
+import { spawnSync } from 'node:child_process';
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'axon-connectors-test-'));
+process.env.BOT_HQ_MODE='local-text';process.env.SESSION_SECRET='synthetic';process.env.DB_PATH=path.join(temp,'test.db');
+const {db}=await import('../src/db.js');const {mountConnectors}=await import('../src/axon-connectors.js');
+for(const owner of ['owner','other']){db.prepare('INSERT INTO users(id,email,name,created_at) VALUES(?,?,?,?)').run(owner,owner+'@synthetic.invalid',owner,1);db.prepare('INSERT INTO auth_sessions VALUES(?,?,?,?)').run(owner+'-session',owner,1,Date.now()+600000);}
+const calls:{url:string;method:string;body:string}[]=[];let upstreamStatus=200;let malformed=false;let deferNext=false;let release:(()=>void)|undefined;let reached:(()=>void)|undefined;
+const stub:typeof fetch=async(input,init)=>{const url=String(input);calls.push({url,method:init?.method??'GET',body:String(init?.body??'')});if(deferNext){deferNext=false;await new Promise<void>(resolve=>{release=resolve;reached?.();});}if(upstreamStatus!==200)return new Response('PRIVATE_RAW_PROVIDER_ERROR_synthetic_token',{status:upstreamStatus});
+ if(malformed)return Response.json({});
+ let data:any;
+ if(url==='https://accounts.spotify.com/api/token'){assert.ok(String(init?.body).includes('client_id='));data={access_token:'synthetic-spotify-access',refresh_token:'synthetic-spotify-refresh',expires_in:3600,scope:'user-read-private user-library-read'};}
+ else if(url==='https://api.spotify.com/v1/me')data={id:'synthetic-spotify-user',display_name:'Synthetic Person',email:'never-return@example.invalid',access_token:'never-return-token'};
+ else if(url.startsWith('https://api.spotify.com/v1/me/tracks?'))data={items:Array.from({length:30},(_,i)=>({track:{id:'t'+i,name:'Synthetic Track '+i,artists:[{name:'Synthetic Artist'}],album:{name:'Synthetic Album'},secret:'never-return-token'}}))};
+ else if(url==='https://wbsapi.withings.net/measure'){assert.equal(init?.method,'POST');assert.ok(String(init.body).includes('action=getmeas'));data={status:0,body:{measuregrps:[{grpid:12,date:123456,measures:[{type:1,value:70000,unit:-3}],access_token:'never-return-token'}]}};}
+ else if(url==='https://sandbox.plaid.com/item/get'){assert.equal(JSON.parse(String(init?.body)).access_token,'access-sandbox-synthetic');data={item:{item_id:'synthetic-item',institution_id:'synthetic-institution',available_products:['transactions'],access_token:'never-return-token'}};}
+ else if(url.startsWith('https://graph.facebook.com/v24.0/123456789?'))data={id:'123456789',display_phone_number:'+15555550101',verified_name:'Synthetic Business',quality_rating:'GREEN',access_token:'never-return-token'};
+ else throw Error('Unexpected request '+url);
+ return Response.json(data);
+};
+const app=new Hono<any>();mountConnectors(app,stub);
+async function request(route:string,method='GET',body?:any,owner='owner'){const r=await app.request('http://127.0.0.1/api/local/connectors'+route,{method,headers:{Cookie:owner+'-session'?'grokbot_session='+owner+'-session':'','Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(route.endsWith('/credentials')?{expectedOwner:owner,...body}:body)});const data=await r.json() as any;assert.ok(!JSON.stringify(data).includes('synthetic-access-secret'));assert.ok(!JSON.stringify(data).includes('PRIVATE_RAW_PROVIDER_ERROR'));assert.ok(!JSON.stringify(data).includes('never-return-token'));return {status:r.status,data};}
+try{
+ assert.equal((await request('','GET',undefined,'missing')).status,401);
+ const catalog=await request('');assert.equal(catalog.data.connectors.length,8);assert.ok(catalog.data.connectors.every((x:any)=>!x.connected));assert.equal(calls.length,0);
+ for(const id of ['gmail','google-calendar','google-drive','google-sheets']){assert.equal((await request('/'+id+'/check','POST',{})).status,424);assert.equal((await request('/'+id+'/credentials','POST',{accessToken:'synthetic-access-secret'})).status,424);}assert.equal(calls.length,0);
+ assert.equal((await request('/unknown')).status,404);assert.equal((await request('/withings/read','POST',{})).status,424);
+ assert.equal((await request('/withings/credentials','POST',{expectedOwner:'other',accessToken:'synthetic-access-secret'})).status,409);
+ const withings=await request('/withings/credentials','POST',{accessToken:'synthetic-access-secret'});assert.equal(withings.status,200);assert.equal(withings.data.connector.status,'configured');assert.equal(withings.data.connector.connected,false);
+ const raw=(db.prepare('SELECT encrypted FROM axon_connector_credentials WHERE owner_id=?').get('owner') as any).encrypted;assert.ok(!raw.includes('synthetic-access-secret'));db.prepare('INSERT INTO axon_connector_credentials VALUES(?,?,?,?,?,?)').run('other','withings',raw,null,'configured',1);assert.equal((await request('/withings/read','POST',{},'other')).status,424);db.prepare('DELETE FROM axon_connector_credentials WHERE owner_id=?').run('other');assert.equal(fs.statSync(path.join(temp,'connector-secrets')).mode&0o777,0o700);assert.equal(fs.statSync(path.join(temp,'connector-secrets/key')).mode&0o777,0o600);
+ assert.equal((await request('/withings/read','POST',{},'other')).status,424);assert.equal((await request('/withings/read','POST',{limit:26})).status,400);
+ const w=await request('/withings/read','POST',{limit:1,url:'https://attacker.invalid'});assert.equal(w.status,200);assert.equal(w.data.result.items.length,1);assert.equal(w.data.connector.connected,true);
+ upstreamStatus=401;assert.equal((await request('/withings/check','POST',{})).status,424);assert.equal((await request('/withings')).data.connector.status,'needs-attention');upstreamStatus=200;
+ assert.equal((await request('/plaid/credentials','POST',{environment:'production',clientId:'x',clientSecret:'x',accessToken:'access-production-x'})).status,400);
+ assert.equal((await request('/plaid/credentials','POST',{environment:'sandbox',clientId:'synthetic-client',clientSecret:'synthetic-secret',accessToken:'access-production-x'})).status,400);
+ assert.equal((await request('/plaid/credentials','POST',{environment:'sandbox',clientId:'synthetic-client',clientSecret:'synthetic-secret',accessToken:'access-sandbox-synthetic'})).status,200);assert.equal((await request('/plaid/read','POST',{})).data.result.kind,'plaid-sandbox-item');
+ assert.equal((await request('/whatsapp/credentials','POST',{accessToken:'synthetic-access-secret',phoneNumberId:'../messages'})).status,400);
+ assert.equal((await request('/whatsapp/credentials','POST',{accessToken:'synthetic-access-secret',phoneNumberId:'123456789'})).status,200);assert.equal((await request('/whatsapp/read','POST',{})).data.result.kind,'whatsapp-phone-configuration');
+ console.log('PASS all8 truthful catalog/authentication; nativeGoogle boundary; encrypted owner-isolated tokens; productionPlaid refusal; bounded Withings/WhatsApp/Plaid fixed readonly requests and sanitized errors');
+ const begin=await request('/spotify/connect','POST',{clientId:'0123456789abcdef0123456789abcdef'});assert.equal(begin.status,200);const auth=new URL(begin.data.authorizationUrl),redirect=new URL(begin.data.redirectUri);assert.equal(auth.origin,'https://accounts.spotify.com');assert.equal(auth.searchParams.get('code_challenge_method'),'S256');assert.equal(redirect.hostname,'127.0.0.1');
+ const bad=new URL(redirect);bad.search=new URLSearchParams({state:'wrong',code:'synthetic-code'}).toString();assert.equal((await fetch(bad)).status,400);
+ const callback=new URL(redirect);callback.search=new URLSearchParams({state:auth.searchParams.get('state')!,code:'synthetic-code'}).toString();assert.equal((await fetch(callback)).status,200);
+ assert.equal((await request('/spotify')).data.connector.status,'configured');assert.equal((await request('/spotify')).data.connector.connected,false);assert.equal((await request('/spotify/check','POST',{})).data.connector.connected,true);const tracks=await request('/spotify/read','POST',{limit:3});assert.equal(tracks.data.result.items.length,3);
+ assert.equal((await request('/spotify/read','POST',{},'other')).status,424);
+ malformed=true;for(const provider of ['spotify','withings','plaid','whatsapp']){const failed=await request('/'+provider+'/check','POST',{});assert.ok([424,502].includes(failed.status));assert.equal((await request('/'+provider)).data.connector.connected,false);}malformed=false;for(const provider of ['spotify','withings','plaid','whatsapp'])assert.equal((await request('/'+provider+'/check','POST',{})).status,200);
+ console.log('PASS Spotify PKCE state mismatch rejected then single authenticated callback exchanged through synthetic upstream; owner profile/library bounded and sanitized');
+ // A committed disconnect must beat an already in-flight read or token exchange.
+ let signalReady!:()=>void;const ready=new Promise<void>(resolve=>{signalReady=resolve;});reached=signalReady;deferNext=true;
+ const reading=request('/withings/read','POST',{});await ready;assert.equal((await request('/withings','DELETE',{})).status,200);release!();assert.equal((await reading).status,409);assert.equal((await request('/withings')).data.connector.connected,false);
+ const second=await request('/spotify/connect','POST',{clientId:'0123456789abcdef0123456789abcdef'}),secondAuth=new URL(second.data.authorizationUrl),secondCallback=new URL(second.data.redirectUri);secondCallback.search=new URLSearchParams({state:secondAuth.searchParams.get('state')!,code:'synthetic-code'}).toString();const ready2=new Promise<void>(resolve=>{reached=resolve;});deferNext=true;const callbackPending=fetch(secondCallback);await ready2;await request('/spotify','DELETE',{});release!();assert.equal((await callbackPending).status,400);assert.equal((await request('/spotify')).data.connector.configured,false);
+ assert.ok(calls.every(x=>!x.url.includes('attacker')&&!x.url.includes('production.plaid')&&!x.url.includes('/messages')));assert.ok(calls.filter(x=>x.url.includes('graph.facebook')).every(x=>x.method==='GET'));
+ console.log('PASS in-flight read and OAuth cancellation cannot restore disconnected credentials; no arbitrary URLs, sends, production financial calls or model calls');
+ // A fresh app instance can reopen ciphertext using only its owner-bound local key.
+ const childCode="process.env.BOT_HQ_MODE='local-text';process.env.SESSION_SECRET='synthetic';process.env.DB_PATH="+JSON.stringify(process.env.DB_PATH)+";const {Hono}=await import('hono');const {mountConnectors}=await import('./server/src/axon-connectors.ts');const {db}=await import('./server/src/db.ts');const app=new Hono();mountConnectors(app,async(url,init)=>{if(String(url)!=='https://sandbox.plaid.com/item/get'||JSON.parse(String(init.body)).access_token!=='access-sandbox-synthetic')throw Error('Unexpected synthetic request');return Response.json({item:{item_id:'synthetic-item'}})});const r=await app.request('http://localhost/api/local/connectors/plaid/read',{method:'POST',headers:{Cookie:'grokbot_session=owner-session','Content-Type':'application/json'},body:'{}'});if(r.status!==200)throw Error('Persisted connector did not reopen');db.close();";const child=spawnSync(process.execPath,['--import','tsx','--input-type=module','-e',childCode],{cwd:process.cwd(),encoding:'utf8'});assert.equal(child.status,0,child.stderr);
+ const restarted=new Hono<any>();mountConnectors(restarted,stub);const restart=await restarted.request('http://127.0.0.1/api/local/connectors/plaid/read',{method:'POST',headers:{Cookie:'grokbot_session=owner-session','Content-Type':'application/json'},body:'{}'});assert.equal(restart.status,200);
+ fs.chmodSync(path.join(temp,'connector-secrets/key'),0o644);assert.equal((await request('/whatsapp/read','POST',{})).status,424);fs.chmodSync(path.join(temp,'connector-secrets/key'),0o600);
+ await request('/plaid','DELETE',{});await request('/whatsapp','DELETE',{});assert.equal((db.prepare('SELECT count(*) n FROM axon_connector_credentials').get() as any).n,0);
+ console.log('PASS separate-process persisted ciphertext reopens; unsafe key permissions rejected; disconnect removes only owned authorization. All provider responses synthetic; zero real network/provider/model calls except own loopback OAuth fixture.');
+}finally{db.close();fs.rmSync(temp,{recursive:true,force:true});}
