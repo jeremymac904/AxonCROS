@@ -1,5 +1,7 @@
 # AxonCROS — a local Mac workspace
 
+**Local source preview — 3.1.0.** This is an independently run Mac workspace, not an all-connectors production release. External accounts require their owner’s authorization; mortgage work remains draft-only. Public binary signing/notarization and physical audio acceptance are not complete.
+
 AxonCROS is a free, open-source local application for chats, five draft mortgage assistants, research citations, files, contacts, tracking and marketing drafts. Each person runs their own copy on their own Mac. It is not a hosted borrower system or an automatically deployed team.
 
 The application builds on [Nick Vasilescu’s MIT-licensed Bot HQ](https://github.com/nickvasilescu/bot-hq). Upstream attribution is preserved. Project-authored additions use the root [MIT license](LICENSE); artwork has a separate [release policy](ASSET_POLICY.md). Use the sanitized source candidate for redistribution, not the private development history or uncleared artwork.
@@ -49,3 +51,7 @@ python3 script/prepare-source-release.py --output-dir /tmp/axoncros-source-candi
 These regression suites use isolated synthetic storage/stub gateways. The source helper requires a clean checkout by default; `--allow-dirty` explicitly labels an uncommitted development candidate. It generates no publication or provider request. The output includes checksums, an exact manifest and the original CC BY4.0 licensed branding/animated characters. Uncleared legacy artwork is omitted or replaced; working originals are preserved.
 
 The native version is declared in `mac-wrapper/script/build.sh`; the installed-source receipt is local to each installation. Historical private acceptance notes are not a current universal release certification. A public binary additionally needs its own packaging, signing/notarization and clean-machine acceptance. See [release gates](docs/local-oss-release.md).
+
+## Source provenance
+
+This public repository starts with a fresh import of the reviewed source archive. It contains no private development history, installed configuration or user data. `RELEASE_MANIFEST.json` records that initial archive snapshot; later public changes are recorded in Git. The app’s Help link points to this public project.
