@@ -1,0 +1,70 @@
+export type GoogleActionState = 'review' | 'queued' | 'running' | 'succeeded' | 'failed' | 'uncertain' | 'cancelled';
+export type GoogleExecutionPolicy = 'review-writes' | 'delegated';
+export interface GoogleAction {
+  id: string; ownerId: string; chatId: string; profileId: string; requestId: string;
+  operation: string; args: Record<string, unknown>; state: GoogleActionState;
+  executionPolicy?: GoogleExecutionPolicy; createdAt: number; updatedAt: number;
+  result?: Record<string, unknown> | null; error?: string | null;
+}
+export interface GoogleActionReceipt { status: 'succeeded' | 'failed' | 'uncertain'; result?: Record<string, unknown>; error?: string }
+export interface GoogleWorkerIO {
+  owner: () => Promise<string | null>;
+  pending: () => Promise<GoogleAction[]>;
+  claim: (id: string) => Promise<GoogleAction>;
+  execute: (action: GoogleAction) => Promise<{ status: string; requestId?: string; operation?: string; result?: Record<string, unknown>; error?: string }>;
+  complete: (id: string, receipt: GoogleActionReceipt) => Promise<unknown>;
+}
+export function boundedGoogleResult(result: Record<string, unknown>): Record<string, unknown> {
+  const encoded = new TextEncoder().encode(JSON.stringify(result));
+  if (encoded.length <= 20_000) return result;
+  return { truncated: true, notice: 'Google completed the action. This saved preview is shortened to fit the local receipt; inspect the provider for the full result.', preview: new TextDecoder().decode(encoded.slice(0, 8_000)) };
+}
+// Retain a returned provider receipt across view remounts. Retry only saving that
+// exact receipt, never a native action. A full app exit leaves the server's
+// running action uncertain rather than silently re-executing a possible write.
+const receipts = new Map<string, { ownerId: string; receipt: GoogleActionReceipt }>();
+export class GoogleAgentWorker {
+  private stopped = false;
+  private processing = false;
+  constructor(readonly ownerId: string, private io: GoogleWorkerIO) {}
+  stop() { this.stopped = true; }
+  private async ownsSession() { return !this.stopped && await this.io.owner() === this.ownerId && !this.stopped; }
+  async tick(): Promise<void> {
+    if (this.stopped || this.processing) return;
+    this.processing = true;
+    try {
+      if (!await this.ownsSession()) return;
+      for (const [id, saved] of receipts) {
+        if (saved.ownerId !== this.ownerId) continue;
+        if (!await this.ownsSession()) return;
+        await this.io.complete(id, saved.receipt);
+        receipts.delete(id);
+      }
+      const actions = await this.io.pending();
+      if (this.stopped) return;
+      const queued = actions.find(action => action.state === 'queued' && action.ownerId === this.ownerId);
+      if (!queued || !await this.ownsSession()) return;
+      const action = await this.io.claim(queued.id);
+      if (action.id !== queued.id || action.ownerId !== this.ownerId || action.state !== 'running') throw new Error('The queued action changed owner or state. No Google request was made.');
+      if (!await this.ownsSession()) return;
+      let receipt: GoogleActionReceipt;
+      try {
+        // Native also compares expectedOwner to its authenticated owner, closing
+        // the gap between the last HTTP check and the native request.
+        const result = await this.io.execute(action);
+        if (result.requestId !== action.id || result.operation !== action.operation) {
+          receipt = { status: 'uncertain', error: 'The native receipt did not match this action. Check Google before requesting it again.' };
+        } else if (result.status === 'completed') receipt = { status: 'succeeded', result: boundedGoogleResult(result.result ?? {}) };
+        else if (result.status === 'failed') receipt = { status: 'failed', error: result.error || 'Google rejected the action before completion.' };
+        else receipt = { status: 'uncertain', error: result.error || 'Google did not confirm the result. Check the provider before requesting this action again.' };
+      } catch {
+        // A bridge rejection is not proof that a remote write did not happen.
+        receipt = { status: 'uncertain', error: 'The Mac action returned no confirmed receipt. Check Google before requesting it again; it will not be repeated automatically.' };
+      }
+      receipts.set(action.id, { ownerId: this.ownerId, receipt });
+      if (!await this.ownsSession()) return;
+      await this.io.complete(action.id, receipt);
+      receipts.delete(action.id);
+    } finally { this.processing = false; }
+  }
+}

@@ -3,9 +3,10 @@ import NativePanelFactory
 
 /// Separate consent and credential namespace from Contacts. No tokens enter JavaScript.
 final class NativeGoogleWorkspace {
-    static let scopes = ["gmail": "https://www.googleapis.com/auth/gmail.metadata", "google-calendar": "https://www.googleapis.com/auth/calendar.events.readonly", "google-drive": "https://www.googleapis.com/auth/drive.metadata.readonly", "google-sheets": "https://www.googleapis.com/auth/spreadsheets.readonly"]
+    static let scopes = ["gmail": "https://www.googleapis.com/auth/gmail.modify", "google-calendar": "https://www.googleapis.com/auth/calendar.events", "google-drive": "https://www.googleapis.com/auth/drive", "google-sheets": "https://www.googleapis.com/auth/spreadsheets", "google-contacts": "https://www.googleapis.com/auth/contacts"]
     private let secrets: ContactCredentialStorage
     private let session: URLSession
+    private let actions: NativeGoogleActions
     private var busy: Set<String> = []
     private var receiver: ContactOAuthReceiver?
     private var authorizationGeneration = 0
@@ -15,9 +16,10 @@ final class NativeGoogleWorkspace {
         config.timeoutIntervalForRequest = 20; config.timeoutIntervalForResource = 30
         config.httpCookieStorage = nil; config.urlCache = nil
         session = transport ?? URLSession(configuration: config, delegate: WorkspaceHTTPRedirects(), delegateQueue: nil)
+        actions = NativeGoogleActions(storage: secrets, session: session)
     }
     func handles(_ action: String) -> Bool {
-        ["googleWorkspaceStatus", "configureGoogleWorkspace", "connectGoogleWorkspace", "cancelGoogleWorkspaceAuth", "disconnectGoogleWorkspace", "readGoogleWorkspace", "checkGoogleWorkspace"].contains(action)
+        ["executeGoogleAction", "googleActionCatalog", "cancelGoogleActions", "googleWorkspaceStatus", "configureGoogleWorkspace", "connectGoogleWorkspace", "cancelGoogleWorkspaceAuth", "disconnectGoogleWorkspace", "readGoogleWorkspace", "checkGoogleWorkspace"].contains(action)
     }
     private func status(_ scope: String) throws -> [String: Any] {
         let client = try secrets.read(scope, "client"), auth = try secrets.read(scope, "authorization")
@@ -30,17 +32,19 @@ final class NativeGoogleWorkspace {
             let connected = authorized && checks[provider] != nil && errors[provider] == nil
             return ["id": provider, "authorized": authorized, "connected": connected, "status": errors[provider] != nil || reconnect ? "needs-attention" : connected ? "connected" : authorized ? "configured" : "not-configured", "dependency": errors[provider] ?? "", "transport": "native-google", "lastCheckedAt": checks[provider] as Any? ?? NSNull()]
         }
-        return ["native": true, "configured": client != nil, "connected": connectors.allSatisfy { $0["connected"] as? Bool == true }, "connectors": connectors, "accountName": auth?["accountName"] ?? NSNull(), "busy": busy.contains(scope), "needsReconnect": reconnect, "direction": "read-only", "scopes": Self.scopes.values.sorted(), "notice": "Separate Workspace consent. Existing Contacts, other apps and Hermes are unchanged. No sends, edits or model access."]
+        return ["native": true, "configured": client != nil, "connected": connectors.allSatisfy { $0["connected"] as? Bool == true }, "connectors": connectors, "accountName": auth?["accountName"] ?? NSNull(), "busy": busy.contains(scope), "needsReconnect": reconnect, "direction": "read-write", "actionCatalog": NativeGoogleActions.catalog, "scopes": Self.scopes.values.sorted(), "notice": "Workspace consent supports typed Google actions. Writes require the selected chat policy; existing legacy Contacts, other apps and Hermes remain separate."]
     }
     func handle(_ action: String, body: [String: Any], window: NSWindow?, authorize: @escaping @MainActor () async throws -> Void = {}, reply: @escaping (Any?, String?) -> Void) {
         guard let scope = body["scope"] as? String, scope.range(of: "^[A-Za-z0-9_.-]{1,96}$", options: .regularExpression) != nil else { reply(nil, "Invalid local owner scope."); return }
-        if action == "cancelGoogleWorkspaceAuth" { authorizationGeneration += 1; receiver?.cancel(); reply(["cancelled": true], nil); return }
+        if action == "cancelGoogleWorkspaceAuth" || action == "cancelGoogleActions" { authorizationGeneration += 1; receiver?.cancel(); reply(["cancelled": true], nil); return }
+        if action == "googleActionCatalog" { reply(["operations": NativeGoogleActions.catalog], nil); return }
+        if action == "executeGoogleAction", body["expectedOwner"] as? String != scope { reply(nil, "This action belongs to another local owner."); return }
         if action == "googleWorkspaceStatus" { do { reply(try status(scope), nil) } catch { reply(nil, "Workspace Keychain metadata is unavailable. Unlock the Mac and retry.") }; return }
         guard !busy.contains(scope) else { reply(nil, "A Workspace operation is in progress. Finish or cancel it first."); return }
         if action == "configureGoogleWorkspace" {
             guard let window else { reply(nil, "Open the AxonCROS window first."); return }
             busy.insert(scope)
-            NativePanels.shared.present(for: window, request: NativePanelRequest(title: "Choose existing Google Desktop OAuth client", message: "Enable Gmail, Calendar, Drive and Sheets APIs in your existing project. This stores the client only in this app’s Workspace Keychain, without connecting an account.")) { [self] panel, result in
+            NativePanels.shared.present(for: window, request: NativePanelRequest(title: "Choose existing Google Desktop OAuth client", message: "Enable Gmail, Calendar, Drive, Sheets and People APIs in your existing project. This stores the client only in this app’s Workspace Keychain, without connecting an account.")) { [self] panel, result in
                 Task { @MainActor in
                     defer { busy.remove(scope) }
                     guard result == .OK, let url = panel?.url else { reply(["cancelled": true], nil); return }
@@ -66,6 +70,7 @@ final class NativeGoogleWorkspace {
                 try await authorize()
                 let output: [String: Any]
                 switch action {
+                case "executeGoogleAction": output = try await executeAction(scope, body: body, authorize: authorize)
                 case "connectGoogleWorkspace": output = try await connect(scope, body: body, authorize: authorize)
                 case "readGoogleWorkspace", "checkGoogleWorkspace": output = try await read(scope, body: body, checkOnly: action == "checkGoogleWorkspace", authorize: authorize)
                 case "disconnectGoogleWorkspace": try secrets.remove(scope, "authorization"); output = ["disconnected": true, "notice": "Only this app’s Workspace token was removed. Contacts and provider data remain. Revoke the grant separately in Google Account permissions if desired."]
@@ -80,8 +85,36 @@ final class NativeGoogleWorkspace {
                 }
                 reply(nil, message)
             }
+            catch let error as NativeGoogleActions.Failure { reply(nil, error.message) }
             catch is ContactOAuthReceiver.OAuthError { reply(nil, "Workspace authorization was cancelled, denied or timed out. No connection was saved.") }
             catch { reply(nil, "Workspace could not finish. Check your network and account permission, then retry. No credentials were returned.") }
+        }
+    }
+    @MainActor private func executeAction(_ scope: String, body: [String: Any], authorize: @escaping @MainActor () async throws -> Void) async throws -> [String: Any] {
+        guard body["expectedOwner"] as? String == scope, let operation = body["operation"] as? String, let args = body["args"] as? [String: Any], let requestId = body["requestId"] as? String else { throw Failure.message("Invalid owner-bound Google action.") }
+        do {
+        try NativeGoogleActions.validate(operation, args)
+        let generation = authorizationGeneration
+        let initial = try secrets.read(scope, "authorization")
+        guard let account = initial?["accountId"] as? String, !account.isEmpty else { throw Failure.message("Reconnect Workspace to verify its Google account identity.") }
+        let check: @MainActor () async throws -> Void = { [self] in
+            try await authorize()
+            guard generation == authorizationGeneration, try secrets.read(scope, "authorization")?["accountId"] as? String == account else { throw Failure.message("Google action was cancelled or its account changed. Review any dispatched outcome before retrying.") }
+        }
+        let auth = try await authorization(scope, authorize: check)
+        try await check()
+        guard let token = auth["access_token"] as? String, auth["needsReconnect"] as? Bool != true else { throw Failure.message("Reconnect Workspace before using Google actions.") }
+        let grants = Set((auth["scope"] as? String ?? "").split(separator: " ").map(String.init))
+        return try await actions.execute(owner: scope, account: account, token: token, granted: grants, operation: operation, args: args, requestId: requestId, authorize: check)
+        } catch {
+            // NativeGoogleActions returns unknown after dispatch; a thrown error is
+            // pre-dispatch. Never translate an owner/session loss into a receipt.
+            try await authorize()
+            let message: String
+            if case Failure.message(let detail) = error { message = detail }
+            else if let failure = error as? NativeGoogleActions.Failure { message = failure.message }
+            else { message = "Google access is unavailable. Reconnect Workspace before retrying." }
+            return ["requestId": requestId, "operation": operation, "status": "failed", "replayed": false, "error": message + " No write was dispatched."]
         }
     }
     @MainActor private func connect(_ scope: String, body: [String: Any], authorize: @escaping @MainActor () async throws -> Void) async throws -> [String: Any] {
@@ -118,12 +151,12 @@ final class NativeGoogleWorkspace {
     @MainActor func finalizeAuthorization(_ scope: String, token: [String: Any], generation: Int, authorize: @escaping @MainActor () async throws -> Void) async throws -> [String: Any] {
         guard generation == authorizationGeneration else { throw Failure.message("Workspace authorization was cancelled. No connection was saved.") }
         guard let access = token["access_token"] as? String,
-              let granted = token["scope"] as? String, Self.scopes.values.allSatisfy({ granted.split(separator: " ").contains(Substring($0)) }) else { throw Failure.message("Google did not grant the requested read-only Workspace scopes. No connected state was saved.") }
+              let granted = token["scope"] as? String, Self.scopes.values.allSatisfy({ granted.split(separator: " ").contains(Substring($0)) }) else { throw Failure.message("Google did not grant the requested Workspace action scopes. No connected state was saved.") }
         let identity = try await request("https://openidconnect.googleapis.com/v1/userinfo", token: access)
         guard let accountID = identity["sub"] as? String, let email = identity["email"] as? String else { throw Failure.message("Google did not return a verifiable account identity.") }
         guard generation == authorizationGeneration else { throw Failure.message("Workspace authorization was cancelled. No connection was saved.") }
         var auth = token
-        auth["accountId"] = accountID; auth["accountName"] = email; auth["direction"] = "read-only"
+        auth["accountId"] = accountID; auth["accountName"] = email; auth["direction"] = "read-write"
         auth["expiresAt"] = Date().timeIntervalSince1970 + (token["expires_in"] as? Double ?? 3600)
         auth["needsReconnect"] = false
         try await authorize()
@@ -141,7 +174,7 @@ final class NativeGoogleWorkspace {
             let token = try await request("https://oauth2.googleapis.com/token", method: "POST", form: ["client_id": clientID,
                 "client_secret": client["client_secret"] as? String ?? "", "refresh_token": refresh, "grant_type": "refresh_token"])
             guard let access = token["access_token"] as? String else { throw Failure.message("Google did not return a refreshed token. Reconnect.") }
-            auth["access_token"] = access; auth["expiresAt"] = Date().timeIntervalSince1970 + (token["expires_in"] as? Double ?? 3600)
+            auth["access_token"] = access; if let refreshedScopes = token["scope"] as? String { auth["scope"] = refreshedScopes }; auth["expiresAt"] = Date().timeIntervalSince1970 + (token["expires_in"] as? Double ?? 3600)
             auth["needsReconnect"] = false; try await authorize(); try secrets.write(scope, "authorization", auth); return auth
         } catch {
             try await authorize()
@@ -153,7 +186,7 @@ final class NativeGoogleWorkspace {
         guard let provider = body["provider"] as? String, let required = Self.scopes[provider] else { throw Failure.message("Choose a supported Workspace service.") }
         var auth = try await authorization(scope, authorize: authorize)
         guard let token = auth["access_token"] as? String,
-              (auth["scope"] as? String ?? "").split(separator: " ").contains(Substring(required)) else { throw Failure.message("This Workspace grant lacks the requested read-only permission. Reconnect explicitly; Contacts permissions cannot be reused.") }
+              (auth["scope"] as? String ?? "").split(separator: " ").contains(Substring(required)) else { throw Failure.message("This Workspace grant lacks the requested permission. Reconnect explicitly; Contacts permissions cannot be reused.") }
         let limit = checkOnly ? 1 : min(10, max(1, body["limit"] as? Int ?? 3))
         var items: [[String: Any]] = []
         var extra: [String: Any] = [:]
@@ -171,7 +204,7 @@ final class NativeGoogleWorkspace {
                     items.append(["id": id, "title": String(subject.prefix(1000)), "detail": "Header only — message body was not requested"])
                 }
             }
-            extra["notice"] = "Gmail metadata only. No body, attachment, draft or send access. Search queries are unavailable with this minimal scope."
+            extra["notice"] = "This preview reads headers only. Agent actions separately support message text, drafts, send and labels under the selected chat policy."
         case "google-calendar":
             let date = ISO8601DateFormatter().string(from: Date())
             let result = try await request(endpoint("https://www.googleapis.com/calendar/v3/calendars/primary/events", ["maxResults": String(limit), "singleEvents": "true", "orderBy": "startTime", "timeMin": date, "fields": "kind,items(id,summary,start,end,status)"]), token: token)
@@ -183,6 +216,11 @@ final class NativeGoogleWorkspace {
             guard result["kind"] as? String == "drive#fileList", result["files"] == nil || result["files"] is [[String: Any]] else { throw Failure.message("Drive returned malformed data; access was not verified.") }
             if !checkOnly { items = (result["files"] as? [[String: Any]] ?? []).prefix(limit).map { row in ["id": row["id"] ?? "", "title": row["name"] ?? "Untitled file", "mimeType": row["mimeType"] ?? "", "modifiedTime": row["modifiedTime"] ?? ""] } }
             extra["notice"] = "File metadata only. No file bytes, downloads or modifications."
+        case "google-contacts":
+            let result = try await request(endpoint("https://people.googleapis.com/v1/people/me/connections", ["pageSize": String(limit), "personFields": "names,emailAddresses,phoneNumbers"]), token: token)
+            guard result["connections"] == nil || result["connections"] is [[String: Any]], result["totalPeople"] is NSNumber || result["connections"] != nil else { throw Failure.message("Contacts returned malformed data; access was not verified.") }
+            if !checkOnly { items = (result["connections"] as? [[String: Any]] ?? []).prefix(limit).map { row in ["id": row["resourceName"] ?? "", "title": (row["names"] as? [[String: Any]])?.first?["displayName"] ?? "Unnamed contact", "detail": "Contact preview only; no local import or provider edit"] } }
+            extra["notice"] = "This preview reads a bounded contact list. It does not import or change contacts."
         case "google-sheets":
             guard let id = body["spreadsheetId"] as? String, id.range(of: "^[A-Za-z0-9_-]{10,150}$", options: .regularExpression) != nil else { throw Failure.message("Enter the ID of an existing spreadsheet you intend to read. Use a synthetic test sheet.") }
             if checkOnly {
@@ -218,7 +256,7 @@ final class NativeGoogleWorkspace {
         var parts = URLComponents(string: base)!; parts.queryItems = parameters.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) }; return parts.url!.absoluteString
     }
     private func request(_ address: String, method: String = "GET", token: String? = nil, form: [String: String]? = nil) async throws -> [String: Any] {
-        guard let url = URL(string: address), url.scheme == "https", ["oauth2.googleapis.com", "openidconnect.googleapis.com", "gmail.googleapis.com", "www.googleapis.com", "sheets.googleapis.com"].contains(url.host ?? ""), method == "GET" || (url.host == "oauth2.googleapis.com" && method == "POST") else { throw Failure.message("Unsupported read-only Google endpoint.") }
+        guard let url = URL(string: address), url.scheme == "https", ["oauth2.googleapis.com", "openidconnect.googleapis.com", "gmail.googleapis.com", "www.googleapis.com", "sheets.googleapis.com", "people.googleapis.com"].contains(url.host ?? ""), method == "GET" || (url.host == "oauth2.googleapis.com" && method == "POST") else { throw Failure.message("Unsupported read-only Google endpoint.") }
         var request = URLRequest(url: url); request.httpMethod = method
         if let token { request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization") }
         if let form {
@@ -239,7 +277,7 @@ final class NativeGoogleWorkspace {
         guard let output = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw Failure.message("Google returned an unreadable result.") }
         return output
     }
-    private enum Failure: Error { case message(String) }
+    private enum Failure: LocalizedError { case message(String); var errorDescription: String? { if case .message(let text) = self { return text }; return nil } }
 }
 private final class WorkspaceHTTPRedirects: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) { completionHandler(nil) }

@@ -32,7 +32,7 @@ final class WorkspaceFixtureProtocol: URLProtocol {
         let owner = "synthetic-owner", scopes = NativeGoogleWorkspace.scopes.values.sorted().joined(separator: " ")
         func seed(_ expires: Double = Date().timeIntervalSince1970 + 3600) {
             storage.records[owner + ":client"] = ["client_id": "synthetic.apps.googleusercontent.com"]
-            storage.records[owner + ":authorization"] = ["access_token": "FAKE_NATIVE_TEST_TOKEN", "refresh_token": "FAKE_NATIVE_REFRESH", "scope": scopes, "expiresAt": expires, "accountName": "synthetic@example.invalid"]
+            storage.records[owner + ":authorization"] = ["access_token": "FAKE_NATIVE_TEST_TOKEN", "refresh_token": "FAKE_NATIVE_REFRESH", "scope": scopes, "expiresAt": expires, "accountName": "synthetic@example.invalid", "accountId": "synthetic-account"]
         }
         func call(_ action: String, _ extra: [String: Any] = [:]) async -> ([String: Any]?, String?) {
             await withCheckedContinuation { continuation in adapter.handle(action, body: ["scope": owner].merging(extra) { _, new in new }, window: nil) { result, error in continuation.resume(returning: (result as? [String: Any], error)) } }
@@ -42,11 +42,12 @@ final class WorkspaceFixtureProtocol: URLProtocol {
         check(WorkspaceFixtureProtocol.requests.isEmpty, "Status never fetches providers")
         seed(); result = await call("googleWorkspaceStatus")
         let initial = result.0?["connectors"] as? [[String: Any]] ?? []
-        check(initial.count == 4 && initial.allSatisfy { $0["authorized"] as? Bool == true && $0["connected"] as? Bool == false }, "Granted scopes are authorized but not claimed checked")
+        check(initial.count == 5 && initial.allSatisfy { $0["authorized"] as? Bool == true && $0["connected"] as? Bool == false }, "Granted scopes are authorized but not claimed checked")
         let serialized = String(data: try JSONSerialization.data(withJSONObject: result.0!), encoding: .utf8)!
         check(!serialized.contains("FAKE_NATIVE"), "Native status excludes token values")
         WorkspaceFixtureProtocol.response = { request in
             let path = request.url!.path
+            if path.hasSuffix("/connections") { return (200, ["totalPeople": 1, "connections": [["resourceName": "people/one", "names": [["displayName": "Synthetic contact"]]]]]) }
             if path.hasSuffix("/messages") { return (200, ["resultSizeEstimate": 1, "messages": [["id": "abc123"]]]) }
             if path.contains("/messages/") { return (200, ["id": "abc123", "payload": ["headers": [["name": "Subject", "value": "Synthetic subject"]]]]) }
             if path.contains("/events") { return (200, ["kind": "calendar#events", "items": [["id": "event1", "summary": "Synthetic meeting", "start": ["date": "2026-11-13"]]]]) }
@@ -54,7 +55,7 @@ final class WorkspaceFixtureProtocol: URLProtocol {
             if path.contains("/values/") { return (200, ["range": "Sheet1!A1:D5", "values": [["Synthetic", "42"]]]) }
             return (200, ["spreadsheetId": "syntheticSheet123"])
         }
-        for provider in ["gmail", "google-calendar", "google-drive", "google-sheets"] {
+        for provider in ["gmail", "google-calendar", "google-drive", "google-sheets", "google-contacts"] {
             result = await call("readGoogleWorkspace", ["provider": provider, "limit": 3, "spreadsheetId": "syntheticSheet123", "range": "A1:D5"])
             check(result.1 == nil && result.0?["readOnly"] as? Bool == true, "\(provider) read succeeds through synthetic transport")
             if provider == "google-drive" { check((result.0?["items"] as? [[String: Any]])?.count == 3, "Preview record bound enforced even for oversized provider collection") }
@@ -62,12 +63,12 @@ final class WorkspaceFixtureProtocol: URLProtocol {
         check(WorkspaceFixtureProtocol.requests.allSatisfy { $0.httpMethod == "GET" }, "All service operations are GET; no send/write calls")
         check(WorkspaceFixtureProtocol.requests.filter { $0.url!.path.contains("/messages/") }.allSatisfy { $0.url!.query!.contains("format=metadata") }, "Gmail requests metadata only")
         result = await call("googleWorkspaceStatus")
-        check(result.0?["connected"] as? Bool == true, "Four successful checks yield connected metadata")
+        check(result.0?["connected"] as? Bool == true, "Five successful checks yield connected metadata")
         let requestsBeforeRange = WorkspaceFixtureProtocol.requests.count
         result = await call("readGoogleWorkspace", ["provider": "google-sheets", "spreadsheetId": "syntheticSheet123", "range": "A1:Z99999"])
         check(result.1 != nil && WorkspaceFixtureProtocol.requests.count == requestsBeforeRange, "Oversized range denied before provider call")
         check(NativeGoogleWorkspace.boundedRange("'Test Sheet'!B2:F21") && !NativeGoogleWorkspace.boundedRange("A2:A1") && !NativeGoogleWorkspace.boundedRange("A:A"), "Bounded ranges enforce cells, order and explicit dimensions")
-        for provider in ["gmail", "google-calendar", "google-drive", "google-sheets"] {
+        for provider in ["gmail", "google-calendar", "google-drive", "google-sheets", "google-contacts"] {
             WorkspaceFixtureProtocol.response = { _ in (200, [:]) }
             result = await call("checkGoogleWorkspace", ["provider": provider, "spreadsheetId": "syntheticSheet123"])
             check(result.1 != nil, "\(provider) malformed200 cannot verify access")
@@ -121,6 +122,37 @@ final class WorkspaceFixtureProtocol: URLProtocol {
         let sanitized = try NativeConnectorCredentials.validated(["accessToken": "synthetic", "unrelatedSecret": "must-not-copy"], provider: "withings")
         check(sanitized.count == 1 && sanitized["unrelatedSecret"] == nil, "Native picker allowlists only necessary credential fields")
         check((try? NativeConnectorCredentials.validated(["accessToken": "synthetic", "phoneNumberId": "https://attacker.invalid"], provider: "whatsapp")) == nil, "WhatsApp phone identity rejects URL injection")
+        // Public bridge action semantics, all through synthetic URLProtocol.
+        WorkspaceFixtureProtocol.delay = 0
+        storage.records.removeValue(forKey: owner + ":authorization")
+        let actionId = UUID().uuidString
+        let actionBody: [String: Any] = ["operation": "gmail.send", "args": ["to": ["synthetic@example.invalid"], "subject": "Synthetic", "body": "Synthetic"], "requestId": actionId, "expectedOwner": owner]
+        let noGrantCount = WorkspaceFixtureProtocol.requests.count
+        result = await call("executeGoogleAction", actionBody)
+        check(result.1 == nil && result.0?["status"] as? String == "failed" && result.0?["requestId"] as? String == actionId && WorkspaceFixtureProtocol.requests.count == noGrantCount, "Unconfigured action returns matched failed receipt without provider call")
+        check((result.0?["error"] as? String)?.contains("Reconnect Workspace to verify its Google account identity.") == true, "Unconfigured failed receipt preserves actionable sanitized dependency message")
+        seed()
+        result = await call("executeGoogleAction", actionBody.merging(["expectedOwner": "other"]) { _, v in v })
+        check(result.1 != nil && WorkspaceFixtureProtocol.requests.count == noGrantCount, "Action expectedOwner mismatch blocks dispatch")
+        result = await call("googleActionCatalog")
+        check((result.0?["operations"] as? [[String: Any]])?.count == 20, "Native action catalog exposes 20 fixed operations")
+        WorkspaceFixtureProtocol.delay = 0.1
+        WorkspaceFixtureProtocol.response = { _ in (200, ["resourceName": "people/person1", "etag": "v1", "metadata": ["sources": [["type": "CONTACT", "etag": "s1"]]], "names": [["givenName": "Synthetic"]]]) }
+        let contactAction: [String: Any] = ["operation": "contacts.update", "args": ["resourceName": "people/person1", "givenName": "Changed"], "requestId": UUID().uuidString, "expectedOwner": owner]
+        let cancelBefore = WorkspaceFixtureProtocol.requests.count
+        let pendingAction = Task { @MainActor in await call("executeGoogleAction", contactAction) }
+        try await Task.sleep(nanoseconds: 20_000_000)
+        _ = await call("cancelGoogleActions")
+        let cancelledAction = await pendingAction.value
+        check(cancelledAction.0?["status"] as? String == "failed" && WorkspaceFixtureProtocol.requests.count == cancelBefore + 1 && WorkspaceFixtureProtocol.requests.last?.httpMethod == "GET", "Cancellation generation prevents mutation after deferred preflight")
+        seed()
+        let changedBefore = WorkspaceFixtureProtocol.requests.count
+        let changedAction = Task { @MainActor in await call("executeGoogleAction", contactAction.merging(["requestId": UUID().uuidString]) { _, v in v }) }
+        try await Task.sleep(nanoseconds: 20_000_000)
+        storage.records[owner + ":authorization"]?["accountId"] = "different-account"
+        let accountChanged = await changedAction.value
+        check(accountChanged.0?["status"] as? String == "failed" && WorkspaceFixtureProtocol.requests.count == changedBefore + 1 && WorkspaceFixtureProtocol.requests.last?.httpMethod == "GET", "Changing Google account during preflight prevents mutation")
+        WorkspaceFixtureProtocol.delay = 0
         print(String(data: try JSONSerialization.data(withJSONObject: ["passed": true, "checks": checks, "providerCalls": 0, "realCredentials": false, "contactsWrites": 0], options: [.prettyPrinted, .sortedKeys]), encoding: .utf8)!)
     }
 }

@@ -2,13 +2,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 mode="${1:-run}"
-case "$mode" in run|--verify|--logs) ;; *) echo "Usage: $0 [--verify|--logs]" >&2; exit 2;; esac
+case "$mode" in run|--verify|--logs|--install-only) ;; *) echo "Usage: $0 [--verify|--logs|--install-only]" >&2; exit 2;; esac
 export PATH="$HOME/.local/bin:$PATH"
 support="$HOME/Library/Application Support/Bot HQ"
 installed="$HOME/Applications/AxonCROS.app"
 legacy="$HOME/Applications/Bot HQ.app"
 # Quit only this wrapper, leaving Hermes and other applications alone.
 if pgrep -x BotHQ >/dev/null; then
+  if [[ "$mode" == --install-only ]]; then
+    echo 'Quit AxonCROS before using --install-only.' >&2; exit 1
+  fi
   osascript -e 'tell application id "local.bot-hq.desktop" to quit'
   for attempt in {1..30}; do pgrep -x BotHQ >/dev/null || break; sleep 0.2; done
   if pgrep -x BotHQ >/dev/null; then echo 'AxonCROS did not quit; build canceled.' >&2; exit 1; fi
@@ -68,7 +71,7 @@ fi
 xattr -cr "$installed"
 codesign --verify --deep --strict "$installed"
 node script/setup-local.mjs
-open -n "$installed"
+if [[ "$mode" != --install-only ]]; then open -n "$installed"; fi
 if [[ "$mode" == --verify ]]; then
   sleep 2
   pgrep -x BotHQ >/dev/null

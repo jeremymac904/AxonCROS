@@ -49,7 +49,7 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply, AVSpeechSyn
               let action = body["action"] as? String else { replyHandler(nil, "Native controls are available only inside AxonCROS."); return }
         // Cleanup must remain available when the app server or login disappears.
         // These actions return no stored data and can only stop this app's work.
-        if ["cancelDictation", "stopSpeaking", "cancelGoogleContactsAuth", "cancelGoogleWorkspaceAuth"].contains(action) {
+        if ["cancelDictation", "stopSpeaking", "cancelGoogleContactsAuth", "cancelGoogleWorkspaceAuth", "cancelGoogleActions"].contains(action) {
             var cleanup = body; cleanup["scope"] = "cleanup"
             dispatch(action, body: cleanup, owner: "cleanup", replyHandler: replyHandler)
             return
@@ -61,6 +61,7 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply, AVSpeechSyn
                 replyHandler(nil, "Open and unlock AxonCROS before using native controls."); return
             }
             if let requested = body["scope"] as? String, requested != owner { replyHandler(nil, "This native operation belongs to another local session."); return }
+            if action == "executeGoogleAction", body["expectedOwner"] as? String != owner { replyHandler(nil, "This action belongs to another local owner."); return }
             var owned = body; owned["scope"] = owner
             self.dispatch(action, body: owned, owner: owner, replyHandler: replyHandler)
         }
@@ -90,6 +91,22 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply, AVSpeechSyn
     @MainActor private func ensureOwner(_ owner: String) async throws {
         let current: String? = await withCheckedContinuation { continuation in authenticatedOwner { continuation.resume(returning: $0) } }
         guard current == owner else { throw NSError(domain: "AxonCROS.Session", code: 401) }
+    }
+    @MainActor private func ensureGoogleAction(_ body: [String: Any], owner: String) async throws {
+        try await ensureOwner(owner)
+        guard let webView, let id = body["requestId"] as? String, UUID(uuidString: id) != nil else { throw NSError(domain: "AxonCROS.Action", code: 400) }
+        let cookies: [HTTPCookie] = await withCheckedContinuation { continuation in webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { continuation.resume(returning: $0) } }
+        let url = URL(string: "http://127.0.0.1:\(port)/api/local/agent-actions/\(id)/execution")!
+        var request = URLRequest(url: url); request.timeoutInterval = 5
+        request.allHTTPHeaderFields = HTTPCookie.requestHeaderFields(with: cookies.filter { $0.domain == "127.0.0.1" && url.path.hasPrefix($0.path) && !$0.isSecure })
+        let config = URLSessionConfiguration.ephemeral; config.httpCookieStorage = nil; config.urlCache = nil
+        let session = URLSession(configuration: config, delegate: NativeLocalNoRedirect(), delegateQueue: nil)
+        defer { session.finishTasksAndInvalidate() }
+        let (data, response) = try await session.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200, data.count <= 128_000,
+              let payload = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              NativeGoogleActions.matchesClaim(payload, body: body, owner: owner) else { throw NSError(domain: "AxonCROS.Action", code: 409) }
+        try await ensureOwner(owner)
     }
     @MainActor private func provisionConnector(_ provider: String, owner: String, payload: [String: Any]) async throws -> [String: Any] {
         guard NativeConnectorCredentials.providers.contains(provider), let webView else { throw NSError(domain: "AxonCROS.Connector", code: 400) }
@@ -149,6 +166,10 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply, AVSpeechSyn
                     self.authenticatedOwner { continuation.resume(returning: $0) }
                 }
                 guard current == owner else { throw NSError(domain: "AxonCROS.Session", code: 401) }
+                if action == "executeGoogleAction" {
+                    guard let self else { throw NSError(domain: "AxonCROS.Session", code: 401) }
+                    try await self.ensureGoogleAction(body, owner: owner)
+                }
             }, reply: replyHandler)
             return
         }
@@ -318,6 +339,7 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply, AVSpeechSyn
         self.utterance = nil; speechSession = nil; emit(["type": "speech", "sessionId": id, "state": "cancelled"])
     }
     func stopAll() {
+        googleWorkspace.handle("cancelGoogleActions", body: ["scope": "cleanup"], window: nil) { _, _ in }
         if let id = captureSession { finishCapture(id, state: "cancelled") }
         stopSpeech()
     }

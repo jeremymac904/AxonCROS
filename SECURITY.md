@@ -17,6 +17,16 @@ be tested for each provider. The local model endpoint is a user-operated service
 do not expose it to the network. Model output and imported/retrieved text are
 untrusted. Local drafts do not authorize sending, publication or borrower use.
 
+Google agent mode has a separate per-conversation model-context permission and
+execution policy. Delegated mode permits supported Google writes for the user's
+task. Outbound recipients that were not supplied in the current user request
+require exact-action review. Native credentials remain in Keychain; only bounded
+provider results enter the model context. Reads, action arguments and receipts
+can themselves contain private data and remain in local storage. Do not publish
+that storage. Interrupted writes are not automatically retried; inspect unknown
+outcomes in the provider. Permanent-delete, access-sharing, ACL and arbitrary-URL
+operations are not exposed by the native agent catalog.
+
 For a suspected vulnerability, contact the repository maintainer through an
 existing private channel. If the public repository enables GitHub private
 vulnerability reporting, use its Security → Report a vulnerability control.
