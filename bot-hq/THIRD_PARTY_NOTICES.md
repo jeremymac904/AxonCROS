@@ -69,3 +69,30 @@ A bundled Node.js runtime must retain Node's LICENSE (including its bundled
 third-party notices). Runtime npm dependencies retain their own LICENSE files.
 The source lockfile records exact dependency resolutions; the release workflow
 records an inventory rather than implying all dependencies use MIT.
+
+
+## Direct WhatsApp linked-device dependencies
+
+The optional direct WhatsApp Web adapter uses these pinned runtime packages:
+
+| Package | Version | License / provenance |
+| --- | --- | --- |
+| `@whiskeysockets/baileys` | `7.0.0-rc13` | MIT; copyright 2025 Rajeh Taher/WhiskeySockets. [Upstream](https://github.com/WhiskeySockets/Baileys), [license](LICENSES/Baileys-MIT.md). |
+| `qrcode` | `1.5.4` | MIT; copyright 2012 Ryan Day. [Upstream](https://github.com/soldair/node-qrcode), [license](LICENSES/QRCode-MIT.md). |
+| `whatsapp-rust-bridge` | `0.5.4` | Package metadata declares MIT; JavaScript/WebAssembly dependency. [Declared upstream](https://github.com/jlucaso1/whatsapp-rust-bridge). The installed package does not contain a LICENSE file; obtain its authoritative notice before a public runtime release. |
+| `libsignal` | `6.0.0` | GPL-3.0; transitive Baileys cryptography dependency. [Upstream source](https://github.com/WhiskeySockets/libsignal-node), [license](LICENSES/libsignal-GPL-3.0.md). |
+
+The project-authored source retains its existing MIT license, and the supplied
+artwork retains its separate CC BY 4.0 attribution. These licenses do **not**
+replace the GPL-3.0 terms on libsignal. A combined runtime containing this
+adapter must not be represented as MIT-only. Any public distribution must
+satisfy the applicable GPL terms, including the corresponding-source and
+license requirements for the combined work. The 3.4.0 local validation build
+is not a newly authorized public binary release. The lockfile identifies exact
+package artifacts; runtime packaging retains dependency source and licenses.
+
+Baileys is an unofficial WhatsApp Web client and is not endorsed by WhatsApp
+or Meta. Linking requires the account owner's explicit phone approval. This
+adapter does not use the WhatsApp Business API or create a Business account;
+it does not promise immunity from service restrictions or that unrelated
+provider/account usage is free. No Hermes session or credentials are reused.

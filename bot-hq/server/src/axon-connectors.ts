@@ -7,7 +7,7 @@ import { Hono } from 'hono';
 import { db, now } from './db.js';
 import { env } from './env.js';
 import { requireUser, userFromCookieHeader, type AuthVars } from './lib/auth.js';
-type Provider='gmail'|'google-calendar'|'google-drive'|'google-sheets'|'google-contacts'|'plaid'|'spotify'|'withings'|'whatsapp'|'zapier'|'buffer';
+type Provider='gmail'|'google-calendar'|'google-drive'|'google-sheets'|'google-contacts'|'plaid'|'spotify'|'withings'|'whatsapp'|'zapier'|'buffer'|'whatsapp-web';
 type Credentials=Record<string,string>;
 type Connection={owner_id:string;provider:Provider;encrypted:string;verified_at:number|null;state:string;updated_at:number};
 class ConnectorError extends Error {constructor(message:string,readonly status:400|404|409|424|502=400){super(message);}}
@@ -45,6 +45,12 @@ export const mcpVault={
  exists:(owner:string,id:'zapier'|'buffer')=>!!row(owner,id),
  save:(owner:string,id:'zapier'|'buffer',connectionToken:string)=>save(owner,id,{connectionToken}),
  remove:(owner:string,id:'zapier'|'buffer')=>db.prepare('DELETE FROM axon_connector_credentials WHERE owner_id=? AND provider=?').run(owner,id),
+};
+/** Linked-device auth is separate from WhatsApp Cloud credentials and never exported. */
+export const whatsappWebVault={
+ read:(owner:string):Credentials|null=>row(owner,'whatsapp-web')?decode(owner,'whatsapp-web'):null,
+ save:(owner:string,data:Credentials)=>save(owner,'whatsapp-web',data),
+ remove:(owner:string)=>db.prepare('DELETE FROM axon_connector_credentials WHERE owner_id=? AND provider=?').run(owner,'whatsapp-web'),
 };
 export function connectorCatalog(owner?:string){return definitions.map(def=>{const r=owner?row(owner,def.id):undefined;return {...def,status:r?.state??'not-configured',connected:r?.state==='connected',configured:!!r,lastCheckedAt:r?.verified_at??null,readOnly:!nativeIds.has(def.id),blocker:r?.state==='connected'?null:def.dependency,notice:nativeIds.has(def.id)?'Preview reads remain explicit. In agent mode, selected Google results may enter the configured model only with per-chat consent; action policy and saved execution receipts apply.':def.id==='plaid'?'Synthetic sandbox only. No live bank connection.':'Results stay in the explicit preview; they are not sent to an assistant.'};});}
 export function connectorStatus(owner:string,id:Provider){return connectorCatalog(owner).find(x=>x.id===id)!;}

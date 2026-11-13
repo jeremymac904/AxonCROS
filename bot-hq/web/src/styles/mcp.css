@@ -12,3 +12,7 @@
 
 .axon-mcp-mode .axon-agent-mode-row + .axon-agent-mode-row { margin-top: 10px; }
 .axon-mcp-overview + .axon-mcp-overview { margin-top: 12px; }
+
+.axon-whatsapp-qr{display:block;max-width:100%;height:auto;background:white}.axon-whatsapp-text{white-space:pre-wrap;overflow-wrap:anywhere}
+
+.axon-connections-compact{display:none}.axon-connection-permissions{flex-shrink:0;max-height:38vh;overflow:auto}@media(max-width:760px){.axon-connections-compact{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;border-bottom:1px solid var(--axon-border,#e4e7ec)}.axon-connections-compact button{font:inherit;font-size:12px;border:1px solid #d9dfe8;border-radius:7px;background:var(--axon-bg,#fff);color:inherit;padding:7px 9px}.axon-compact-activity{flex-basis:100%;text-align:left}.axon-connection-permissions{display:none;max-height:32vh;overflow:auto}.axon-connection-permissions.is-expanded{display:block}}

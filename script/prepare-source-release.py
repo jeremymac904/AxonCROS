@@ -21,7 +21,7 @@ import tarfile
 ROOT_FILES = {"README.md", "LICENSE", "ASSET_POLICY.md", "SECURITY.md", "ARTWORK_LICENSE.md", ".gitignore"}
 DOCS = {"docs/local-oss-release.md", "docs/axon-cros-native-bridge.md",
         "docs/axon-cros-r3-backend.md", "docs/axon-cros-r3-news-sources.md", "docs/research-provenance.md",
-        "docs/connector-setup.md", "docs/google-agent-actions.md"}
+        "docs/connector-setup.md", "docs/google-agent-actions.md", "docs/mcp-and-messages.md", "docs/direct-whatsapp.md"}
 RESEARCH_FILES = {"mortgage-bot-team/" + name for name in (
     "00-START-HERE.md", "01-team-operating-model.md", "02-loan-workflow.md",
     "03-controls-and-sources.md", "04-bot-profiles.md", "05-acceptance-tests.md",

@@ -34,6 +34,7 @@ ditto bot-hq/node_modules "$stage/app/node_modules"
 ditto bot-hq/server/dist "$stage/app/server/dist"
 ditto bot-hq/web/dist "$stage/app/web/dist"
 cp bot-hq/package.json bot-hq/package-lock.json bot-hq/LICENSE bot-hq/THIRD_PARTY_NOTICES.md "$stage/app/"
+[[ ! -d bot-hq/LICENSES ]] || ditto bot-hq/LICENSES "$stage/app/LICENSES"
 cp bot-hq/server/package.json "$stage/app/server/"
 cp bot-hq/web/package.json "$stage/app/web/"
 # Sign outside the iCloud/File Provider checkout; Finder metadata may reappear there.

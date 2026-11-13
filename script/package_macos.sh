@@ -70,6 +70,7 @@ cp LICENSE ASSET_POLICY.md ARTWORK_LICENSE.md SECURITY.md RELEASE_MANIFEST.json 
 cp LICENSES/CC-BY-4.0.txt "$app/Contents/Resources/Legal/"
 cp bot-hq/LICENSE "$app/Contents/Resources/Legal/Upstream-Bot-HQ-LICENSE"
 cp bot-hq/THIRD_PARTY_NOTICES.md "$app/Contents/Resources/Legal/"
+[[ ! -d bot-hq/LICENSES ]] || ditto bot-hq/LICENSES "$app/Contents/Resources/Legal/LICENSES"
 python3 - "$runtime/package-lock.json" "$app/Contents/Resources/Legal/DEPENDENCY_INVENTORY.json" <<'PY'
 import json,sys
 from pathlib import Path

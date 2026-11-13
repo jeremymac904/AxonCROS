@@ -3,7 +3,7 @@ export type GoogleExecutionPolicy = 'review-writes' | 'delegated';
 export interface GoogleAction {
   id: string; ownerId: string; chatId: string; profileId: string; requestId: string;
   operation: string; args: Record<string, unknown>; state: GoogleActionState;
-  executor?: 'native-google' | 'native-messages' | 'server-mcp';
+  executor?: 'native-google' | 'native-messages' | 'server-mcp' | 'server-whatsapp';
   executionPolicy?: GoogleExecutionPolicy; createdAt: number; updatedAt: number;
   result?: Record<string, unknown> | null; error?: string | null;
 }
@@ -43,10 +43,10 @@ export class GoogleAgentWorker {
       }
       const actions = await this.io.pending();
       if (this.stopped) return;
-      const queued = actions.find(action => action.state === 'queued' && action.ownerId === this.ownerId && (action.executor === undefined || action.executor === 'native-google' || action.executor === 'native-messages') && action.operation !== 'mcp.call');
+      const queued = actions.find(action => action.state === 'queued' && action.ownerId === this.ownerId && (action.executor === undefined || action.executor === 'native-google' || action.executor === 'native-messages') && action.operation !== 'mcp.call' && action.operation !== 'whatsapp.send');
       if (!queued || !await this.ownsSession()) return;
       const action = await this.io.claim(queued.id);
-      if (action.id !== queued.id || action.operation !== queued.operation || action.executor !== queued.executor || action.ownerId !== this.ownerId || action.state !== 'running' || action.executor === 'server-mcp' || action.operation === 'mcp.call') throw new Error('The queued action changed owner or state. No native request was made.');
+      if (action.id !== queued.id || action.operation !== queued.operation || action.executor !== queued.executor || action.ownerId !== this.ownerId || action.state !== 'running' || action.executor === 'server-mcp' || action.executor === 'server-whatsapp' || action.operation === 'mcp.call' || action.operation === 'whatsapp.send') throw new Error('The queued action changed owner or state. No native request was made.');
       if (!await this.ownsSession()) return;
       let receipt: GoogleActionReceipt;
       try {
