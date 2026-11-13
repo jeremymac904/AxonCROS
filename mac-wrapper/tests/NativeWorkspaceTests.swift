@@ -126,6 +126,15 @@ final class WorkspaceFixtureProtocol: URLProtocol {
         check(zapier.count == 1 && zapier["connectionToken"] as? String == "synthetic-connection-token", "Zapier importer accepts only native connection token payload")
         check((try? NativeConnectorCredentials.validated(["connectionToken": "synthetic", "url": "https://attacker.invalid"], provider: "zapier")) == nil, "Zapier importer rejects renderer-directed server URL")
         check((try? NativeConnectorCredentials.validated(["connectionToken": "bad\r\nheader"], provider: "zapier")) == nil, "Zapier importer rejects header delimiters")
+        for provider in ["zapier", "buffer"] {
+            let valid = try NativeConnectorCredentials.validated(["connectionToken": "synthetic.AZ09_~+/-=="], provider: provider)
+            check(valid["connectionToken"] as? String == "synthetic.AZ09_~+/-==", "\(provider) accepts RFC6750 bearer alphabet with trailing padding")
+            for token in [String(repeating: "•", count: 39) + "abcd", "********abcd", "syntheticé", "synthetic token", "synthetic\tkey", "synthetic:key", "synthetic=middle", "https://invalid.example/key", "short"] {
+                var submissions = 0
+                do { _ = try NativeConnectorCredentials.validated(["connectionToken": token], provider: provider); submissions += 1 } catch {}
+                check(submissions == 0, "\(provider) rejects invalid or masked bearer before submission, case \(token.utf8.count) bytes")
+            }
+        }
         // Public bridge action semantics, all through synthetic URLProtocol.
         WorkspaceFixtureProtocol.delay = 0
         storage.records.removeValue(forKey: owner + ":authorization")

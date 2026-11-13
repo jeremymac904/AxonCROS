@@ -12,6 +12,11 @@ final class NativeConnectorCredentials {
         var result: [String: Any] = [:]
         for field in fields {
             guard let value = input[field] as? String, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, value.utf8.count <= 8192, !value.unicodeScalars.contains(where: { $0.value == 0 || $0.value == 10 || $0.value == 13 }) else { throw Invalid.file }
+            if field == "connectionToken" {
+                // RFC 6750 b64token. Reject masked UI text before native submission
+                // or encrypted storage; never include credential bytes in errors.
+                guard value.utf8.count >= 8, value.range(of: "\\A[A-Za-z0-9._~+/-]+=*\\z", options: .regularExpression) != nil else { throw Invalid.bearer }
+            }
             result[field] = value
         }
         if provider == "plaid" { guard input["environment"] as? String == "sandbox" else { throw Invalid.file }; result["environment"] = "sandbox" }
@@ -34,12 +39,13 @@ final class NativeConnectorCredentials {
                     let response = try await submit(payload)
                     try await authorize()
                     reply(response, nil)
-                } catch is Invalid { reply(nil, "Invalid connector JSON. Required fields: \(["zapier", "buffer"].contains(provider) ? "connectionToken only (no server URL)" : provider == "plaid" ? "clientId, clientSecret, accessToken, environment: sandbox (production is blocked)" : provider == "whatsapp" ? "accessToken and numeric phoneNumberId" : "accessToken"). Choose an existing file under 32 KB; no settings changed.") }
+                } catch Invalid.bearer { reply(nil, "Choose the actual existing API or connection token using the provider’s Copy or Reveal control, not its masked display. Only an ASCII bearer token is accepted; no settings changed.") }
+                catch is Invalid { reply(nil, "Invalid connector JSON. Required fields: \(["zapier", "buffer"].contains(provider) ? "connectionToken only (no server URL)" : provider == "plaid" ? "clientId, clientSecret, accessToken, environment: sandbox (production is blocked)" : provider == "whatsapp" ? "accessToken and numeric phoneNumberId" : "accessToken"). Choose an existing file under 32 KB; no settings changed.") }
                 catch { reply(nil, "Connector credentials could not be saved. Check that the local app is unlocked and retry. No secret values were returned.") }
             }
         }
     }
-    enum Invalid: Error { case file }
+    enum Invalid: Error { case file, bearer }
 }
 final class NativeLocalNoRedirect: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) { completionHandler(nil) }

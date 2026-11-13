@@ -1,0 +1,2025 @@
+{
+  "provenance": "Buffer MCP schemas discovered2026-11-13; descriptions/defaults/examples removed; no owner, tokens or provider records. Validation keywords preserved.",
+  "schemas": {
+    "list_channels": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "pattern": "^[a-f\\d]{24}$"
+        }
+      },
+      "required": [
+        "organizationId"
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "list_posts": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "pattern": "^[a-f\\d]{24}$"
+        },
+        "channelIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f\\d]{24}$"
+          }
+        },
+        "status": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "needs_approval",
+              "scheduled",
+              "sending",
+              "sent",
+              "error"
+            ]
+          }
+        },
+        "tagIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f\\d]{24}$"
+          }
+        },
+        "dueAt": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            }
+          }
+        },
+        "createdAt": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            }
+          }
+        },
+        "sort": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string",
+                "enum": [
+                  "dueAt",
+                  "createdAt"
+                ]
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "required": [
+              "field",
+              "direction"
+            ]
+          }
+        },
+        "first": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 100
+        },
+        "after": {
+          "type": "string"
+        },
+        "includeMetrics": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "organizationId"
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "get_post": {
+      "type": "object",
+      "properties": {
+        "postId": {
+          "type": "string",
+          "pattern": "^[a-f\\d]{24}$"
+        },
+        "includeMetrics": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "postId"
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "create_post": {
+      "type": "object",
+      "properties": {
+        "channelId": {
+          "type": "string",
+          "pattern": "^[a-f\\d]{24}$"
+        },
+        "schedulingType": {
+          "type": "string",
+          "enum": [
+            "notification",
+            "automatic"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "addToQueue",
+            "shareNow",
+            "shareNext",
+            "customScheduled"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "dueAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        },
+        "tagIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f\\d]{24}$"
+          }
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "thumbnailUrl": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          {
+                            "type": "string",
+                            "const": ""
+                          }
+                        ]
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "properties": {
+                          "altText": {
+                            "type": "string"
+                          },
+                          "animatedThumbnail": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "userTags": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "handle": {
+                                  "type": "string"
+                                },
+                                "x": {
+                                  "type": "number"
+                                },
+                                "y": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "handle",
+                                "x",
+                                "y"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "altText"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "url"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "video": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "properties": {
+                          "thumbnailOffset": {
+                            "type": "integer",
+                            "minimum": -2147483648,
+                            "maximum": 2147483647
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "url"
+                    ]
+                  }
+                },
+                "required": [
+                  "video"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "document": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "thumbnailUrl": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          {
+                            "type": "string",
+                            "const": ""
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "title",
+                      "thumbnailUrl"
+                    ]
+                  }
+                },
+                "required": [
+                  "document"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "instagram": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "story",
+                    "reel",
+                    "post"
+                  ]
+                },
+                "firstComment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "link": {
+                  "type": "string"
+                },
+                "geolocation": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "shouldShareToFeed": {
+                  "type": "boolean"
+                },
+                "stickerFields": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "isAiGenerated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type",
+                "shouldShareToFeed"
+              ]
+            },
+            "facebook": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "post",
+                    "reel",
+                    "story"
+                  ]
+                },
+                "firstComment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "annotations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "content": {
+                        "type": "string"
+                      },
+                      "indices": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": -2147483648,
+                          "maximum": 2147483647
+                        }
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "content",
+                      "indices",
+                      "text",
+                      "url"
+                    ]
+                  }
+                },
+                "linkAttachment": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "thumbnail": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        {
+                          "type": "string",
+                          "const": ""
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "url": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": ""
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "url"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "linkedin": {
+              "type": "object",
+              "properties": {
+                "firstComment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "annotations": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "link": {
+                            "type": "string"
+                          },
+                          "entity": {
+                            "type": "string"
+                          },
+                          "vanityName": {
+                            "type": "string"
+                          },
+                          "localizedName": {
+                            "type": "string"
+                          },
+                          "start": {
+                            "type": "integer",
+                            "minimum": -2147483648,
+                            "maximum": 2147483647
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": -2147483648,
+                            "maximum": 2147483647
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "link",
+                          "entity",
+                          "vanityName",
+                          "localizedName",
+                          "start",
+                          "length"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "linkAttachment": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "thumbnail": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        {
+                          "type": "string",
+                          "const": ""
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "url": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": ""
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "url"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            },
+            "twitter": {
+              "type": "object",
+              "properties": {
+                "retweet": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "thread": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "assets": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "image": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "altText": {
+                                          "type": "string"
+                                        },
+                                        "animatedThumbnail": {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        "userTags": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "handle": {
+                                                "type": "string"
+                                              },
+                                              "x": {
+                                                "type": "number"
+                                              },
+                                              "y": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "handle",
+                                              "x",
+                                              "y"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "altText"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "image"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "video": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "thumbnailOffset": {
+                                          "type": "integer",
+                                          "minimum": -2147483648,
+                                          "maximum": 2147483647
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "video"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "document": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url",
+                                    "title",
+                                    "thumbnailUrl"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "document"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "properties": {
+                          "threads": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          },
+                          "bluesky": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "isAiGenerated": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "pinterest": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "boardServiceId": {
+                  "type": "string"
+                }
+              }
+            },
+            "google": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "event",
+                    "offer",
+                    "whats_new"
+                  ]
+                },
+                "detailsOffer": {
+                  "type": "object",
+                  "properties": {
+                    "startDate": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "endDate": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "link": {
+                      "type": "string"
+                    },
+                    "terms": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "startDate",
+                    "endDate"
+                  ]
+                },
+                "detailsEvent": {
+                  "type": "object",
+                  "properties": {
+                    "startDate": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "endDate": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "isFullDayEvent": {
+                      "type": "boolean"
+                    },
+                    "button": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "book",
+                        "order",
+                        "shop",
+                        "learn_more",
+                        "signup",
+                        "call"
+                      ]
+                    },
+                    "link": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "startDate",
+                    "endDate",
+                    "isFullDayEvent"
+                  ]
+                },
+                "detailsWhatsNew": {
+                  "type": "object",
+                  "properties": {
+                    "button": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "book",
+                        "order",
+                        "shop",
+                        "learn_more",
+                        "signup",
+                        "call"
+                      ]
+                    },
+                    "link": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "youtube": {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "type": "string"
+                },
+                "privacy": {
+                  "type": "string",
+                  "enum": [
+                    "public",
+                    "private",
+                    "unlisted"
+                  ]
+                },
+                "license": {
+                  "type": "string",
+                  "enum": [
+                    "youtube",
+                    "creativeCommon"
+                  ]
+                },
+                "notifySubscribers": {
+                  "type": "boolean"
+                },
+                "embeddable": {
+                  "type": "boolean"
+                },
+                "madeForKids": {
+                  "type": "boolean"
+                },
+                "isAiGenerated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "title",
+                "categoryId"
+              ]
+            },
+            "mastodon": {
+              "type": "object",
+              "properties": {
+                "thread": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "assets": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "image": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "altText": {
+                                          "type": "string"
+                                        },
+                                        "animatedThumbnail": {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        "userTags": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "handle": {
+                                                "type": "string"
+                                              },
+                                              "x": {
+                                                "type": "number"
+                                              },
+                                              "y": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "handle",
+                                              "x",
+                                              "y"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "altText"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "image"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "video": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "thumbnailOffset": {
+                                          "type": "integer",
+                                          "minimum": -2147483648,
+                                          "maximum": 2147483647
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "video"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "document": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url",
+                                    "title",
+                                    "thumbnailUrl"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "document"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "properties": {
+                          "threads": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          },
+                          "bluesky": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "spoilerText": {
+                  "type": "string"
+                }
+              }
+            },
+            "threads": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "post",
+                    "ghost_post"
+                  ]
+                },
+                "thread": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "assets": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "image": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "altText": {
+                                          "type": "string"
+                                        },
+                                        "animatedThumbnail": {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        "userTags": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "handle": {
+                                                "type": "string"
+                                              },
+                                              "x": {
+                                                "type": "number"
+                                              },
+                                              "y": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "handle",
+                                              "x",
+                                              "y"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "altText"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "image"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "video": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "thumbnailOffset": {
+                                          "type": "integer",
+                                          "minimum": -2147483648,
+                                          "maximum": 2147483647
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "video"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "document": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url",
+                                    "title",
+                                    "thumbnailUrl"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "document"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "properties": {
+                          "threads": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          },
+                          "bluesky": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "linkAttachment": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "type": "string"
+                        },
+                        "thumbnail": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uri"
+                            },
+                            {
+                              "type": "string",
+                              "const": ""
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "url": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": ""
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "url"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "url"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "topic": {
+                  "type": "string"
+                },
+                "locationId": {
+                  "type": "string"
+                },
+                "locationName": {
+                  "type": "string"
+                }
+              }
+            },
+            "bluesky": {
+              "type": "object",
+              "properties": {
+                "thread": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "assets": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "image": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "altText": {
+                                          "type": "string"
+                                        },
+                                        "animatedThumbnail": {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        "userTags": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "handle": {
+                                                "type": "string"
+                                              },
+                                              "x": {
+                                                "type": "number"
+                                              },
+                                              "y": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "handle",
+                                              "x",
+                                              "y"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "altText"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "image"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "video": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "thumbnailOffset": {
+                                          "type": "integer",
+                                          "minimum": -2147483648,
+                                          "maximum": 2147483647
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "url"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "video"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "document": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "thumbnailUrl": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uri"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": ""
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "url",
+                                    "title",
+                                    "thumbnailUrl"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "document"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "metadata": {
+                        "type": "object",
+                        "properties": {
+                          "threads": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          },
+                          "bluesky": {
+                            "type": "object",
+                            "properties": {
+                              "linkAttachment": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  },
+                                  "thumbnail": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "format": "uri"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": ""
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "url": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "format": "uri"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": ""
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "url"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "url"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "linkAttachment": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "thumbnail": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        {
+                          "type": "string",
+                          "const": ""
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "url": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": ""
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "url"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            },
+            "tiktok": {
+              "type": "object",
+              "properties": {
+                "isAiGenerated": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "substack": {
+              "type": "object",
+              "properties": {
+                "linkAttachment": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "thumbnail": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        {
+                          "type": "string",
+                          "const": ""
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "url": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": ""
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "url"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "saveToDraft": {
+          "type": "boolean"
+        },
+        "ideaId": {
+          "type": "string",
+          "pattern": "^[a-f\\d]{24}$"
+        },
+        "draftId": {
+          "type": "string",
+          "pattern": "^[a-f\\d]{24}$"
+        }
+      },
+      "required": [
+        "channelId",
+        "schedulingType"
+      ],
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  }
+}

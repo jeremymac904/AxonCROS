@@ -27,21 +27,36 @@ const MAX_RESPONSE = 200_000;
 // Responses envelope marked completed. Match only known, unquoted leading
 // diagnostics, never substrings in research quotes, code blocks or explanations.
 const GATEWAY_FAILURE_PREFIX = /^(?:codex app-server (?:startup failed:|turn failed:|error -?\d+:|subprocess exited unexpectedly\b)|turn\/start (?:failed|timed out):|turn ended status=(?:failed|incomplete|cancelled|canceled):|turn timed out after \d+(?:\.\d+)?s\b|codex authentication failed [—-]|codex went silent for \d+s after a tool result;|codex reported turn_aborted\b|bot hq subscription guard:|\(no response generated\)|error:|<turn_aborted\s*\/?>)/i;
+class GatewayAllowanceError extends Error {
+  constructor(){super('The dedicated ChatGPT gateway blocked this model turn because included subscription allowance is unavailable, could not be verified, or reached its conservative usage stop. No further action was dispatched and nothing was retried. Wait for the allowance reset or review gateway readiness. Review saved action receipts before another attempt; earlier actions may already have completed.');}
+}
+function checkSubscriptionGuard(value:unknown){
+  if(usesLocalModel||typeof value!=='string')return;
+  const diagnostic=value.trim();
+  // Only the installed guard's exact allowance diagnostics, behind a known
+  // leading transport error. Quoted research and arbitrary provider text do not
+  // become capacity claims. Never return raw diagnostics or weaken admission.
+  if(GATEWAY_FAILURE_PREFIX.test(diagnostic)&&/bot hq subscription guard:\s*(?:subscription allowance could not be verified\.|included subscription allowance is unavailable; this request is blocked\.|missing subscription usage windows\.|usage reached the conservative (?:[1-9]|[1-8][0-9]|9[0-5])% stop point or is unknown; wait for reset\.)/i.test(diagnostic))throw new GatewayAllowanceError();
+}
 function completedGatewayReply(data: any): string {
+  checkSubscriptionGuard(typeof data?.error==='string'?data.error:data?.error?.message);
   if (!data || typeof data !== 'object' || data.error || data.status !== 'completed'
       || data.incomplete_details || !Array.isArray(data.output)) throw new Error();
   const parts: string[] = [];
   for (const item of data.output) {
+    checkSubscriptionGuard(typeof item?.error==='string'?item.error:item?.error?.message);
     if (!item || typeof item !== 'object' || item.error || item.type === 'error'
         || (item.status !== undefined && item.status !== 'completed')) throw new Error();
     if (item.type !== 'message' || item.role !== 'assistant') continue;
     if (!Array.isArray(item.content)) throw new Error();
     for (const part of item.content) {
+      checkSubscriptionGuard(typeof part?.error==='string'?part.error:part?.error?.message);
       if (!part || typeof part !== 'object' || part.error || part.type === 'error') throw new Error();
       if (part.type === 'output_text' && typeof part.text === 'string') parts.push(part.text);
     }
   }
   const reply = parts.join('\n').trim();
+  checkSubscriptionGuard(reply);
   if (!reply || GATEWAY_FAILURE_PREFIX.test(reply)) throw new Error();
   return reply;
 }
@@ -346,6 +361,7 @@ app.post('/api/local/chats/:id/messages', async (c) => {
       const raw = await response.text();
       if (raw.length > MAX_RESPONSE) throw new Error();
       try{return completedGatewayReply(JSON.parse(raw))}catch(error){
+        if(error instanceof GatewayAllowanceError)throw new agentActions.AgentError(error.message,429);
         if(agentMode)throw new agentActions.AgentError('The model gateway returned a failed or incomplete response. No agent plan was accepted and nothing was retried. Review saved action receipts before another attempt.',502);
         throw error;
       }

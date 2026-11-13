@@ -19,6 +19,7 @@ const model=http.createServer(async(req,res)=>{
  if(output?.delayMs){const wait=output.delayMs;output={...output};delete output.delayMs;await new Promise(r=>setTimeout(r,wait));}
  if(output?.httpError){res.statusCode=output.httpError;res.end(JSON.stringify({error:'SYNTHETIC_PRIVATE_CAPACITY_DETAIL'}));return;}
  if(output?.invalidEnvelope){res.end(JSON.stringify({status:'failed',error:{message:'SYNTHETIC_PRIVATE_CAPACITY_DETAIL'}}));return;}
+ if(output?.guardEnvelope){res.end(JSON.stringify({status:'failed',error:{message:output.guardEnvelope}}));return;}
  const text=typeof output==='string'?output:JSON.stringify(output);
  res.end(JSON.stringify(req.url==='/v1/responses'?{status:'completed',output:[{type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text}]}]}:{choices:[{finish_reason:'stop',message:{role:'assistant',content:text}}]}));
 });model.listen(0,'127.0.0.1');await once(model,'listening');const modelURL=`http://127.0.0.1:${(model.address()as any).port}`;
@@ -106,6 +107,13 @@ try{
  await stop();await start('hermes');const hc=await chat();planned=[{type:'action',operation:'gmail.search',args:{limit:1}},{type:'final',text:'Synthetic Hermes route receipt.'}];const ht=send(hc),ha=await waitAction(hc.id);await finish(ha);assert.equal((await ht).status,200);assert.ok(lastInputs.at(-1)?.includes('Action receipts for this request'));
  for(const status of [429,503]){const ch=await chat('delegated');planned=[{httpError:status}];const before=calls,r=await send(ch);assert.equal(r.status,status);assert.match(r.data.error,/saved (?:Google )?action receipts/);assert.ok(!r.data.error.includes('valid agent protocol'));assert.equal(calls,before+1);assert.equal(r.data.actions.length,0)}
  console.log('PASS dedicated Hermes plain Responses transport and local chat completions transport use same loop; synthetic upstreams only');
+ const guard='Bot HQ subscription guard: usage reached the conservative 80% stop point or is unknown; wait for reset.';
+ for(const failure of [guard,guard.replace('80%','95%'),'turn/start failed: codex app-server error -32001: '+guard,'Codex app-server turn failed: '+guard,{guardEnvelope:'Bot HQ subscription guard: subscription allowance could not be verified.'},'Bot HQ subscription guard: included subscription allowance is unavailable; this request is blocked.','Bot HQ subscription guard: missing subscription usage windows.']){
+  const ch=await chat('delegated');planned=[failure];const before=calls,r=await send(ch);assert.equal(r.status,429);assert.equal(r.data.actions.length,0);assert.match(r.data.error,/included subscription allowance/);assert.match(r.data.error,/saved action receipts/);assert.ok(!r.data.error.includes('valid agent protocol'));assert.equal(calls,before+1);
+ }
+ const partial=await chat('delegated');planned=[{type:'action',operation:'sheets.create',args:{title:'Before allowance block'}},guard];const partialTurn=send(partial),partialAction=await waitAction(partial.id);await finish(partialAction);const partialReply=await partialTurn;assert.equal(partialReply.status,429);assert.equal(partialReply.data.actions[0].state,'succeeded');assert.match(partialReply.data.error,/earlier actions may already have completed/);
+ const quote=(await api('/api/local/chats','POST',{profileId:'general'})).data.chat;planned=['A documented example says: "'+guard+'". This is a quotation, not a current allowance claim.'];assert.equal((await send(quote)).status,200);
+ console.log('PASS flattened and structured subscription-guard failures return sanitized429; no retry; prior successful receipts retained; legitimate quoted diagnostics preserved');
  await stop();await start('hermes',true);const slow=await chat('delegated');planned=[{delayMs:300,type:'action',operation:'drive.create',args:{name:'Synthetic bounded slow turn'}},{delayMs:300,type:'final',text:'Synthetic slow sequence completed.'}];const slowStarted=Date.now(),slowTask=send(slow),slowAction=await waitAction(slow.id);await finish(slowAction);assert.equal((await slowTask).status,200);assert.ok(Date.now()-slowStarted>500);assert.equal((await api(`/api/local/chats/${slow.id}/agent-actions`)).data.actions.length,1);
  console.log('PASS accelerated timing: two successful model turns exceed one model deadline but stay inside bounded agent budget; one action, no retry');
 
