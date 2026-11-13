@@ -87,6 +87,21 @@ try{
  for(const output of [{type:'action',operation:'gmail.send',args:{to:Array(21).fill('synthetic@example.invalid'),subject:'Synthetic',body:'No send'}},{type:'action',operation:'drive.read',args:{id:'a'.repeat(201)}},{type:'action',operation:'shell.exec',args:{command:'no'}},{type:'action',operation:'drive.read',args:{id:'x',url:'https://evil.invalid'}},{type:'action',operation:'sheets.write',args:{spreadsheetId:'x',range:'A1',values:[Array(501).fill('x')]}},'not valid JSON']){const ch=await chat('delegated');planned=[output];assert.ok([400,409].includes((await send(ch)).status));assert.equal((await api(`/api/local/chats/${ch.id}/agent-actions`)).data.actions.length,0)}
  const repeat=await chat('delegated'),same={type:'action',operation:'sheets.create',args:{title:'No duplicate'}};planned=[same,same,{type:'final',text:'One result.'}];const rt=send(repeat),ra=await waitAction(repeat.id);await finish(ra);assert.equal((await rt).status,200);assert.equal((await api(`/api/local/chats/${repeat.id}/agent-actions`)).data.actions.length,1);
  console.log('PASS unsupported operations/unknown arguments/oversized cells/malformed protocol rejected; repeated model action reused receipt, no duplicate execution');
+ // One stray trailing character or a code fence around the single protocol
+ // object is recovered. Two objects, or prose that is not one object, is
+ // still rejected and dispatches nothing.
+ for(const [output,expected] of [
+  [JSON.stringify({type:'action',operation:'sheets.create',args:{title:'Recovered trailing'}})+'"',true],
+  ['```json\n'+JSON.stringify({type:'action',operation:'sheets.create',args:{title:'Recovered fence'}})+'\n```',true],
+  ['prefix '+JSON.stringify({type:'action',operation:'sheets.create',args:{title:'Recovered prefix'}})+' suffix',true],
+  ['{"type":"action","operation":"sheets.create","args":{"title":"A"}}{"type":"action","operation":"sheets.create","args":{"title":"B"}}',false],
+  ['I cannot help with that request.',false],
+ ] as [string,boolean][]){
+  const ch=await chat('delegated');planned=[output];
+  if(expected){const turn=send(ch),act=await waitAction(ch.id);assert.equal(act.operation,'sheets.create');await finish(act);assert.equal((await turn).status,200);assert.equal((await api(`/api/local/chats/${ch.id}/agent-actions`)).data.actions.length,1)}
+  else{assert.ok([400,409].includes((await send(ch)).status));assert.equal((await api(`/api/local/chats/${ch.id}/agent-actions`)).data.actions.length,0)}
+ }
+ console.log('PASS single stray trailing character or code fence recovered into one protocol object; two objects or prose still rejected with nothing dispatched');
  const restart=await chat('delegated');planned=[{type:'action',operation:'drive.create',args:{name:'Restart synthetic'}}];const restarting=send(restart).catch(()=>null),restartAction=await waitAction(restart.id);await api(`/api/local/agent-actions/${restartAction.id}/claim`,'POST',{});await stop();await restarting;await start();const saved=(await api(`/api/local/chats/${restart.id}/agent-actions`)).data.actions;assert.equal(saved[0].state,'uncertain');assert.equal((await api(`/api/local/chats/${restart.id}`)).data.chat.agentMode,true);assert.equal((await api(`/api/local/agent-actions/${restartAction.id}/claim`,'POST',{})).status,409);assert.equal((await api(`/api/local/chats/${c.id}`)).data.messages.length,2);
  console.log('PASS restart retains permissions/history/receipts; interrupted running action uncertain, never requeued');
  // Every fixed operation can enter the queue; the native adapter owns provider-specific validation.
