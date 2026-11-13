@@ -40,8 +40,8 @@ cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <key>CFBundleName</key><string>AxonCROS</string>
 <key>CFBundleDisplayName</key><string>AxonCROS</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
-<key>CFBundleVersion</key><string>19</string>
-<key>CFBundleShortVersionString</key><string>3.2.0</string>
+<key>CFBundleVersion</key><string>20</string>
+<key>CFBundleShortVersionString</key><string>3.2.1</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSPrincipalClass</key><string>NSApplication</string>
 <key>NSMicrophoneUsageDescription</key><string>AxonCROS uses the microphone only when you start dictation or a voice conversation.</string>
@@ -68,8 +68,8 @@ cat > "$helper/Contents/Info.plist" <<'PLIST'
 <key>CFBundleIdentifier</key><string>local.bot-hq.desktop.filepicker</string>
 <key>CFBundleName</key><string>AxonCROS File Picker</string>
 <key>CFBundleDisplayName</key><string>AxonCROS File Picker</string>
-<key>CFBundleVersion</key><string>19</string>
-<key>CFBundleShortVersionString</key><string>3.2.0</string>
+<key>CFBundleVersion</key><string>20</string>
+<key>CFBundleShortVersionString</key><string>3.2.1</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>LSUIElement</key><true/>
 <key>NSPrincipalClass</key><string>NSApplication</string>

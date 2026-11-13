@@ -1,6 +1,6 @@
 # AxonCROS — a local Mac workspace
 
-**Local source preview — 3.2.0.** This is an independently run Mac workspace with optional Google agent actions. External accounts require their owner’s authorization; mortgage borrower examples remain synthetic. Public binary signing/notarization and physical audio acceptance are not complete.
+**Local source preview — 3.2.1.** This is an independently run Mac workspace with optional Google agent actions. External accounts require their owner’s authorization; mortgage borrower examples remain synthetic. Public binary signing/notarization and physical audio acceptance are not complete.
 
 AxonCROS is a free, open-source local application for chats, five draft mortgage assistants, research citations, files, contacts, tracking and marketing drafts. Each person runs their own copy on their own Mac. It is not a hosted borrower system or an automatically deployed team.
 

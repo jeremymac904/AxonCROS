@@ -68,6 +68,12 @@ sent provider request may still complete. An unknown outcome must be inspected
 in the provider before another attempt. The app does not automatically repeat
 an ambiguous send or write after timeout, cancellation or restart.
 
+A request allows up to eight actions over twenty minutes, with a five-minute
+limit per model turn. Subscription gateway responses can take several minutes.
+A busy or rate-limited gateway is reported separately from an invalid model
+response. Review saved receipts before starting a new attempt; an upstream model
+turn may still be running after the local wait ends.
+
 Provider consent, API checks, synthetic operation tests and real provider writes
 are distinct verification stages. A successful mocked test is not proof that an
 account is connected or that a particular live action succeeded.

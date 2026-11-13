@@ -15,16 +15,20 @@ const model=http.createServer(async(req,res)=>{
  if(req.url==='/v1/models'){res.end(JSON.stringify({data:[{id:'synthetic-local'}]}));return;}
  let raw='';for await(const chunk of req)raw+=chunk;const b=JSON.parse(raw);calls++;assert.equal(b.tools,undefined);assert.equal(b.model,req.url==='/v1/responses'?'gpt-6.1-sol':'synthetic-local');
  const input=b.messages?.[1]?.content??b.input;lastInputs.push(input);
- const output=planned.shift()??{type:'final',text:'Synthetic provider receipt reviewed.'};
+ let output=planned.shift()??{type:'final',text:'Synthetic provider receipt reviewed.'};
+ if(output?.delayMs){const wait=output.delayMs;output={...output};delete output.delayMs;await new Promise(r=>setTimeout(r,wait));}
+ if(output?.httpError){res.statusCode=output.httpError;res.end(JSON.stringify({error:'SYNTHETIC_PRIVATE_CAPACITY_DETAIL'}));return;}
+ if(output?.invalidEnvelope){res.end(JSON.stringify({status:'failed',error:{message:'SYNTHETIC_PRIVATE_CAPACITY_DETAIL'}}));return;}
  const text=typeof output==='string'?output:JSON.stringify(output);
  res.end(JSON.stringify(req.url==='/v1/responses'?{status:'completed',output:[{type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text}]}]}:{choices:[{finish_reason:'stop',message:{role:'assistant',content:text}}]}));
 });model.listen(0,'127.0.0.1');await once(model,'listening');const modelURL=`http://127.0.0.1:${(model.address()as any).port}`;
 const allocator=http.createServer();allocator.listen(0,'127.0.0.1');await once(allocator,'listening');const port=(allocator.address()as any).port;await new Promise<void>(r=>allocator.close(()=>r()));const base=`http://127.0.0.1:${port}`;
 let child:ReturnType<typeof spawn>|undefined,cookie='',otherCookie='',logs='',database:Database.Database;
 async function api(route:string,method='GET',body?:any,session=cookie){const r=await fetch(base+route,{method,headers:{Cookie:session,...(method==='GET'?{}:{Origin:base,'Content-Type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)})});return {status:r.status,data:await r.json()as any};}
-async function start(provider='openai-local'){
+async function start(provider='openai-local',scaled=false){
  const token=crypto.randomBytes(32).toString('hex'),home=path.join(tmp,'isolated-gateway');fs.mkdirSync(home,{recursive:true});
- child=spawn(process.execPath,['--import','tsx','server/src/index.ts'],{cwd:process.cwd(),stdio:['ignore','pipe','pipe'],env:{PATH:process.env.PATH,HOME:os.homedir(),BOT_HQ_MODE:'local-text',AXON_MODEL_PROVIDER:provider,AXON_LOCAL_MODEL_URL:modelURL,AXON_LOCAL_MODEL:'synthetic-local',HERMES_HOME_PRIMARY:home,HERMES_URL:modelURL,HERMES_KEY:'synthetic-key',PORT:String(port),APP_URL:base,SERVER_URL:base,SESSION_SECRET:'synthetic-session-secret-'.repeat(4),ALLOWED_EMAILS:'synthetic@example.invalid',DB_PATH:dbPath,BOT_HQ_LAUNCH_TOKEN:token}});
+ const preload=path.join(tmp,'scaled-timeouts.mjs');if(scaled)fs.writeFileSync(preload,"const original=AbortSignal.timeout.bind(AbortSignal);AbortSignal.timeout=(ms)=>original(ms===300000?500:ms===1200000?5000:ms);");
+ child=spawn(process.execPath,[...(scaled?['--import',preload]:[]),'--import','tsx','server/src/index.ts'],{cwd:process.cwd(),stdio:['ignore','pipe','pipe'],env:{PATH:process.env.PATH,HOME:os.homedir(),BOT_HQ_MODE:'local-text',AXON_MODEL_PROVIDER:provider,AXON_LOCAL_MODEL_URL:modelURL,AXON_LOCAL_MODEL:'synthetic-local',HERMES_HOME_PRIMARY:home,HERMES_URL:modelURL,HERMES_KEY:'synthetic-key',PORT:String(port),APP_URL:base,SERVER_URL:base,SESSION_SECRET:'synthetic-session-secret-'.repeat(4),ALLOWED_EMAILS:'synthetic@example.invalid',DB_PATH:dbPath,BOT_HQ_LAUNCH_TOKEN:token}});
  child.stdout!.on('data',b=>logs+=b);child.stderr!.on('data',b=>logs+=b);
  for(let i=0;i<100;i++){assert.equal(child.exitCode,null,logs);try{if((await fetch(base+'/api/health')).ok)break}catch{}await new Promise(r=>setTimeout(r,100));}
  const response=await fetch(base+'/api/auth/local',{method:'POST',redirect:'manual',headers:{'X-BotHQ-Launch-Token':token}});assert.equal(response.status,303);cookie=response.headers.get('set-cookie')!.split(';')[0];
@@ -79,6 +83,10 @@ try{
  for(const [operation,args]of Object.entries(fixtures)){const ch=await chat('delegated');planned=[{type:'action',operation,args},{type:'final',text:'Synthetic bounded operation receipt.'}];const task=send(ch,'Synthetic operation for synthetic@example.invalid'),act=await waitAction(ch.id);assert.equal(act.state,'queued',operation);await finish(act);assert.equal((await task).status,200,operation)}
  const profiles=(await api('/api/local/profiles')).data.profiles;
  for(const profile of profiles.filter((p:any)=>p.id!=='general')){const ch=(await api('/api/local/chats','POST',{profileId:profile.id})).data.chat;await api(`/api/local/chats/${ch.id}/agent-mode`,'PATCH',{enabled:true,contextConsent:true,executionPolicy:'review-writes'});planned=[{type:'final',text:'Synthetic research draft [R1].'}];assert.equal((await send(ch,'According to saved LendingPad document-merge training, what risk affects the original entries? Synthetic example only.')).status,200,profile.id)}
+ for(const failure of [{httpError:429},{httpError:503},{invalidEnvelope:true}]){
+  const ch=await chat('delegated');planned=[failure];const before=calls,r=await send(ch);assert.equal(r.status,'httpError'in failure?failure.httpError:502);assert.equal(r.data.code,'failed');assert.ok(!r.data.error.includes('valid agent protocol'));assert.match(r.data.error,/saved (?:Google )?action receipts/);assert.ok(!JSON.stringify(r.data).includes('SYNTHETIC_PRIVATE_CAPACITY_DETAIL'));assert.equal(calls,before+1);assert.equal(r.data.actions.length,0);
+ }
+ console.log('PASS upstream429/503/incomplete envelope distinguished from invalid model JSON; saved receipt warning; no retry or private diagnostic exposure');
  const follow=await chat('delegated');planned=[{type:'action',operation:'sheets.create',args:{title:'Followup'}},{type:'final',text:'Synthetic sheet.'}];const ft=send(follow),fa=await waitAction(follow.id);await finish(fa,'succeeded',{spreadsheetId:'saved-synthetic-id'});await ft;planned=[{type:'final',text:'Using prior evidence.'}];assert.equal((await send(follow,'What was the sheet ID?')).status,200);assert.ok(lastInputs.at(-1)?.includes('saved-synthetic-id'));
  const broken=await chat('delegated');planned=[{type:'action',operation:'drive.create',args:{name:'Before model failure'}},'invalid final protocol'];const bt=send(broken),ba=await waitAction(broken.id);await finish(ba);const br=await bt;assert.equal(br.status,409);assert.equal(br.data.actions[0].state,'succeeded');
  assert.equal((await api('/api/local/export')).data.agentActions.actions.some((r:any)=>r.id===ba.id),true);
@@ -96,5 +104,9 @@ try{
  console.log('PASS logout cancels queued automation; session revocation interrupts running action; same-owner relogin cannot resume either request');
  // Both configured model transports share exactly the same strict protocol.
  await stop();await start('hermes');const hc=await chat();planned=[{type:'action',operation:'gmail.search',args:{limit:1}},{type:'final',text:'Synthetic Hermes route receipt.'}];const ht=send(hc),ha=await waitAction(hc.id);await finish(ha);assert.equal((await ht).status,200);assert.ok(lastInputs.at(-1)?.includes('Action receipts for this request'));
+ for(const status of [429,503]){const ch=await chat('delegated');planned=[{httpError:status}];const before=calls,r=await send(ch);assert.equal(r.status,status);assert.match(r.data.error,/saved (?:Google )?action receipts/);assert.ok(!r.data.error.includes('valid agent protocol'));assert.equal(calls,before+1);assert.equal(r.data.actions.length,0)}
  console.log('PASS dedicated Hermes plain Responses transport and local chat completions transport use same loop; synthetic upstreams only');
+ await stop();await start('hermes',true);const slow=await chat('delegated');planned=[{delayMs:300,type:'action',operation:'drive.create',args:{name:'Synthetic bounded slow turn'}},{delayMs:300,type:'final',text:'Synthetic slow sequence completed.'}];const slowStarted=Date.now(),slowTask=send(slow),slowAction=await waitAction(slow.id);await finish(slowAction);assert.equal((await slowTask).status,200);assert.ok(Date.now()-slowStarted>500);assert.equal((await api(`/api/local/chats/${slow.id}/agent-actions`)).data.actions.length,1);
+ console.log('PASS accelerated timing: two successful model turns exceed one model deadline but stay inside bounded agent budget; one action, no retry');
+
 }finally{await stop();database!?.close();await new Promise<void>(r=>model.close(()=>r()));fs.rmSync(tmp,{recursive:true,force:true});}

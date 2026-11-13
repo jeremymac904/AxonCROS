@@ -9,7 +9,7 @@ import path from 'node:path';
 import { parseEnv } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { env } from './env.js';
-import { localModelReady, localModelResponse, localModelURL, localResearchInput, LOCAL_INPUT_BYTES } from './local-model.js';
+import { localModelReady, localModelResponse, localModelURL, localResearchInput, LOCAL_INPUT_BYTES, LocalModelHTTPError } from './local-model.js';
 import { localTextProfile, localTextProfiles } from './local-text-profiles.js';
 import { researchDocuments, researchDocument, researchSnapshotId, researchSnapshotDate, researchNotice } from './local-research-catalog.js';
 import { retrieveResearch, researchPrompt, researchEvidence, savedResearch } from './local-research.js';
@@ -151,7 +151,10 @@ async function gatewayRequest(route: string, init: RequestInit = {}, timeout = 8
     if (route !== '/v1/responses' || typeof init.body !== 'string') throw new Error('Unsupported local model operation.');
     const body = JSON.parse(init.body);
     if (typeof body.input !== 'string') throw new Error('Local model requires text.');
-    return localModelResponse(env.localModelUrl, MODEL, body.input, AbortSignal.any([lifetime.signal, AbortSignal.timeout(timeout), ...(init.signal ? [init.signal] : [])]), env.localModelProvider === 'ollama-local', body.agentMode === true);
+    try{return await localModelResponse(env.localModelUrl, MODEL, body.input, AbortSignal.any([lifetime.signal, AbortSignal.timeout(timeout), ...(init.signal ? [init.signal] : [])]), env.localModelProvider === 'ollama-local', body.agentMode === true)}catch(error){
+      if(body.agentMode===true&&error instanceof LocalModelHTTPError)return Response.json({error:'Local model request failed.'},{status:error.status});
+      throw error;
+    }
   }
   return fetch(`${env.hermesUrl}${route}`, {
     ...init, redirect: 'error', signal: AbortSignal.any([lifetime.signal, AbortSignal.timeout(timeout), ...(init.signal ? [init.signal] : [])]),
@@ -329,10 +332,20 @@ app.post('/api/local/chats/:id/messages', async (c) => {
         method: 'POST', signal, headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: MODEL, stream: false, store: false, input:modelInput, instructions, agentMode:!!chat.agent_mode }),
       }, 300_000);
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        if(chat.agent_mode){
+          if(response.status===429)throw new agentActions.AgentError('The model gateway is busy or rate-limited (HTTP 429). A previous upstream turn may still be running after a local timeout. Nothing was retried. Review saved Google action receipts before a new attempt, so completed work is not duplicated.',429);
+          if(response.status===503)throw new agentActions.AgentError('The model gateway is temporarily unavailable (HTTP 503). Nothing was retried. Review saved Google action receipts before another attempt.',503);
+          throw new agentActions.AgentError(`The model gateway rejected this agent turn (HTTP ${response.status}). No plan was accepted and nothing was retried. Review saved Google action receipts before another attempt.`,502);
+        }
+        throw new Error();
+      }
       const raw = await response.text();
       if (raw.length > MAX_RESPONSE) throw new Error();
-      return completedGatewayReply(JSON.parse(raw));
+      try{return completedGatewayReply(JSON.parse(raw))}catch(error){
+        if(chat.agent_mode)throw new agentActions.AgentError('The model gateway returned a failed or incomplete response. No agent plan was accepted and nothing was retried. Review saved Google action receipts before another attempt.',502);
+        throw error;
+      }
     };
     const reply = chat.agent_mode ? await agentActions.runGoogleAgent({owner:userId,chat,requestId,input,userText:text,signal:activeController.signal,model:invoke,maxInputBytes:usesLocalModel?LOCAL_INPUT_BYTES:120_000}) : await invoke(input,activeController.signal);
     const researched = mortgageProfile ? researchEvidence(reply, sources) : null;

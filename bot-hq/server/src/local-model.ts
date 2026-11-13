@@ -1,5 +1,6 @@
 /** Optional local inference. This adapter never falls back to a hosted service. */
 export const LOCAL_INPUT_BYTES = 24_000;
+export class LocalModelHTTPError extends Error { constructor(readonly status:number){super('Local model request failed.')} }
 const LOCAL_SYSTEM_INSTRUCTIONS = 'You are a local draft assistant. Follow the controlling boundary in the supplied input. Do not use tools, browse, send, publish or claim external actions. If supplied local research supports your answer, cite its exact current reference in square brackets, such as [R1] or [R2]. Write [R1], never bare R1, per R1 or (R1). Cite only supplied references; do not invent citations or imply current verification. If evidence does not support a claim, say so. Preserve source qualifications. Answer the final user message concisely.';
 
 /** Budget optional references, never truncate a reference, instructions or history.
@@ -25,7 +26,8 @@ export function localModelURL(value: string): string {
 }
 
 async function boundedJSON(response: Response): Promise<any> {
-  if (!response.ok || !response.body) throw new Error('Local model request failed.');
+  if (!response.ok) throw new LocalModelHTTPError(response.status);
+  if (!response.body) throw new Error('Local model request failed.');
   const reader = response.body.getReader();
   const parts: Uint8Array[] = [];
   let bytes = 0;

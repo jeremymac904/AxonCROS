@@ -5,8 +5,10 @@ export class ApiError extends Error {
 export interface WorkspaceRecord { id: string; kind: string; profileId?: string; title: string; body: string; status: string; data: Record<string, any>; version: number; createdAt: number; updatedAt: number }
 export interface LocalFile { id: string; name: string; mime: string; size: number; category: string; previewStatus: string; deliverySupported: boolean; createdAt: number; updatedAt: number; profileId?: string; chatId?: string }
 export interface Agent { id: string; name: string; avatarUrl: string | null; avatarCharacter?: BotCharacter | null; soul: string; soulVersion: number; version?: number; updatedAt: number }
-export async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
-  const timeout = method === 'POST' && path.endsWith('/messages') ? 340_000 : 30_000;
+export async function api<T>(path: string, method = 'GET', body?: unknown, options: { agentMode?: boolean } = {}): Promise<T> {
+  // The agent loop can span several model/action steps. This is a client wait
+  // allowance, not permission to retry or extend an individual provider request.
+  const timeout = method === 'POST' && path.endsWith('/messages') ? (options.agentMode ? 1_230_000 : 340_000) : 30_000;
   try {
     const response = await fetch(`/api${path}`, { method, credentials: 'include', signal: AbortSignal.timeout(timeout),
       ...(method !== 'GET' ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body ?? {}) } : {}) });
