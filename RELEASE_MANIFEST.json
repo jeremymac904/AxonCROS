@@ -44,59 +44,12 @@
     "permissionRecorded": "2026-11-13",
     "spdx": "CC-BY-4.0"
   },
-  "baseCommit": "0b5816acda77b627c16cf3f05202ae6857f52b29",
+  "baseCommit": "65fdbbf936e3547b789a4121af6977c832e351a8",
   "dirtyWorktree": false,
   "edition": "sanitized-local-source-candidate",
   "excludedPaths": [
-    ".codex/environments/environment.toml",
-    "HANDOFF_MANIFEST.md",
-    "MACBOOK_HANDOFF.md",
-    "bot-hq/assets/icon.svg",
-    "bot-hq/assets/readme-banner.svg",
-    "bot-hq/assets/screenshots/chat-dark.png",
-    "bot-hq/assets/screenshots/chat-light.png",
-    "bot-hq/assets/screenshots/home-screen.jpg",
-    "bot-hq/assets/screenshots/viewer.png",
-    "bot-hq/gateway/.gitignore",
-    "bot-hq/gateway/README.md",
-    "bot-hq/gateway/manage.py",
-    "bot-hq/gateway/subscription_adapter.py",
-    "bot-hq/gateway/test_subscription_adapter.py",
-    "bot-hq/server/scripts/axon-ui-acceptance.mjs",
-    "bot-hq/tests/ask-weather.wav",
-    "bot-hq/web/artwork/avatars/dr-eggbot-yc-bookface.svg",
-    "bot-hq/web/artwork/avatars/jules-personal-website.svg",
-    "bot-hq/web/artwork/shapes/blob-orange.svg",
-    "bot-hq/web/artwork/shapes/cloud-orange.svg",
-    "bot-hq/web/artwork/shapes/clover-orange.svg",
-    "bot-hq/web/artwork/shapes/flower-orange.svg",
-    "bot-hq/web/artwork/shapes/heart-orange.svg",
-    "bot-hq/web/artwork/shapes/heart-ring-gray.svg",
-    "bot-hq/web/artwork/shapes/heart-ring-white.svg",
-    "bot-hq/web/artwork/shapes/hex-orange.svg",
-    "bot-hq/web/artwork/shapes/house-orange.svg",
-    "bot-hq/web/artwork/shapes/sparkle-orange.svg",
-    "bot-hq/web/artwork/shapes/square-orange.svg",
-    "bot-hq/web/artwork/shapes/star-orange.svg",
-    "bot-hq/web/artwork/shapes/tablet-orange.svg",
-    "bot-hq/web/artwork/shapes/teardrop-orange.svg",
-    "bot-hq/web/artwork/shapes/wedge-orange.svg",
-    "bot-hq/web/public/assets/apps/1password.svg",
-    "bot-hq/web/public/assets/apps/atlassian.png",
-    "bot-hq/web/public/assets/apps/canva.png",
-    "bot-hq/web/public/assets/apps/connected-0.png",
-    "bot-hq/web/public/assets/apps/connected-1.png",
-    "bot-hq/web/public/assets/apps/connected-2.png",
-    "bot-hq/web/public/assets/apps/connected-3.png",
-    "bot-hq/web/public/assets/apps/continual-learning.png",
-    "bot-hq/web/public/assets/apps/cursor-team-kit.png",
-    "bot-hq/web/public/assets/apps/dropbox.png",
-    "bot-hq/web/public/assets/apps/finance.png",
-    "bot-hq/web/public/assets/apps/google-docs.png",
-    "bot-hq/web/public/assets/apps/google-sheets.png",
-    "bot-hq/web/public/assets/apps/linear.png",
-    "bot-hq/web/public/assets/apps/notion.png",
-    "bot-hq/web/public/assets/apps/tubealfred.png",
+    "RELEASE_MANIFEST.json",
+    "SOURCE_EDITION.md",
     "bot-hq/web/public/assets/icons/apps.svg",
     "bot-hq/web/public/assets/icons/arrow_down.svg",
     "bot-hq/web/public/assets/icons/arrow_down_scroll-white.svg",
@@ -127,17 +80,12 @@
     "bot-hq/web/public/assets/icons/voice_a.svg",
     "bot-hq/web/public/assets/icons/voice_b.svg",
     "bot-hq/web/public/favicon.svg",
-    "bot-hq/web/scripts/gen-shapes.mjs",
-    "bot-hq/web/src/avatar/shapes.gen.ts",
-    "docs/ai-bot-team.md",
-    "docs/axon-cros-acceptance.md",
-    "docs/axon-cros-r3-native.md",
-    "macos-loopback.patch"
+    "bot-hq/web/src/avatar/shapes.gen.ts"
   ],
   "files": {
     ".github/workflows/local-ci.yml": {
-      "bytes": 2964,
-      "sha256": "ab9fe952c1e575a695690b11fbe564882133500806b2bf95138972f4034bf99c"
+      "bytes": 3600,
+      "sha256": "e2420437473e0be1e8c67ca76dede3775f1b0683991f103cbd4c22800dba1b1c"
     },
     ".gitignore": {
       "bytes": 305,
@@ -160,12 +108,12 @@
       "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411"
     },
     "README.md": {
-      "bytes": 4971,
-      "sha256": "228d83f3fccdb687bd3cb1908687a1e24a6efabd10351989ad6c616093c54ce7"
+      "bytes": 7577,
+      "sha256": "073dd83d1b3d387bdf8c6f329ea1830c00bda8c8330f35c6d0831a0ba5ef34c1"
     },
     "SECURITY.md": {
-      "bytes": 2451,
-      "sha256": "274197cda8035c76e658454604d119e0c8069770c608b8090e7074148993726f"
+      "bytes": 3146,
+      "sha256": "c3f827961b000939e7469b33cd4f6c58dbefb747b612547a01e7522f5444b7de"
     },
     "SOURCE_EDITION.md": {
       "bytes": 576,
@@ -183,13 +131,29 @@
       "bytes": 1071,
       "sha256": "62679713ea2a576199fa4336de477b048c2979f751532edef529d78b707a189f"
     },
+    "bot-hq/LICENSES/Baileys-MIT.md": {
+      "bytes": 1083,
+      "sha256": "0d814b3b15ae28401c32d3d0042c9537f1216be765850fdb36ad507a3cc90aa4"
+    },
+    "bot-hq/LICENSES/QRCode-MIT.md": {
+      "bytes": 1076,
+      "sha256": "8df47c6ad9ac2c41eb9b2a72def9908959da0ede8dadd56c7b249c1bdb0c5ce6"
+    },
+    "bot-hq/LICENSES/libsignal-GPL-3.0.md": {
+      "bytes": 32472,
+      "sha256": "c61f12da7cdad526bdcbed47a4c0a603e60dbbfdaf8b66933cd088e9132c303f"
+    },
+    "bot-hq/LICENSES/whatsapp-rust-bridge-MIT.md": {
+      "bytes": 2275,
+      "sha256": "216cf6c9d405002f0bcde73468c559b134bf2c53bacee6b067cdd9901eb20b3f"
+    },
     "bot-hq/README.md": {
       "bytes": 497,
       "sha256": "b19589e6efd971a564693a7a04330008d346c4040efaefb909fca22899f51aca"
     },
     "bot-hq/THIRD_PARTY_NOTICES.md": {
-      "bytes": 3963,
-      "sha256": "0afb3e373c3d31f6c311b94c3583bbb66c954771df7458675dc5f4e21e1d0822"
+      "bytes": 6842,
+      "sha256": "3f88da5beb9314c75d47f9c22a139d881325ce8c1972b5ae2558d73fab82786f"
     },
     "bot-hq/docs/ARCHITECTURE.md": {
       "bytes": 7656,
@@ -212,8 +176,8 @@
       "sha256": "383350d8356bb6155632d0c9b3ce521005c21546e887d6bc29a547c174bb2bb9"
     },
     "bot-hq/package-lock.json": {
-      "bytes": 228510,
-      "sha256": "9e7fdc9eee10cdfe473ed60bd7ffd67a3f742bf92ee4f25d29b8777092004baa"
+      "bytes": 314713,
+      "sha256": "6e49fe805b5101db127fd42e50f1894cba43fa59871077c7e658a864b7844929"
     },
     "bot-hq/package.json": {
       "bytes": 589,
@@ -268,16 +232,28 @@
       "sha256": "4c625bb1ae9ea03576c5ea4652aa7c543b377d6ffca39ea8f9f7a7025598b7de"
     },
     "bot-hq/server/package.json": {
-      "bytes": 818,
-      "sha256": "28a415b7c458c910592a8e06569d9e115836f40adbde85513b5c614f683f7894"
+      "bytes": 982,
+      "sha256": "f2304c47b97a62ffc14239318b3e6403529e9d9a369214f992798c5c6e6471d6"
+    },
+    "bot-hq/server/scripts/axon-agent-actions-test.ts": {
+      "bytes": 25817,
+      "sha256": "70b3d3f23736bc1f8ba2f7659b89afa39e769f559739f65dcfaddb5c182d854c"
     },
     "bot-hq/server/scripts/axon-avatar-test.ts": {
       "bytes": 9313,
       "sha256": "fba980111cdea1f6062974fcf3e8b843032c75ae8bcbccbb4b2a72fe693fb9b4"
     },
     "bot-hq/server/scripts/axon-connectors-test.ts": {
-      "bytes": 12433,
-      "sha256": "5c4e5b3407a79cf8abbdf7b2feb19e595ab7e05a5f7ba764fb72c0efeae2c4cf"
+      "bytes": 12711,
+      "sha256": "200763a7747caa510eaf281b0acc10e8c40089042b0141058fdfc617adfb68ac"
+    },
+    "bot-hq/server/scripts/axon-mcp-test.ts": {
+      "bytes": 20163,
+      "sha256": "f1682c22c79bcbd2c9c7e33f71bb66d6b912d6bff8fe1092bfea6154ba478f3c"
+    },
+    "bot-hq/server/scripts/axon-model-mcp-test.ts": {
+      "bytes": 9034,
+      "sha256": "adb278151b2264a53f943583efa095f07111a1fbb4d80ae66969a603901a9adb"
     },
     "bot-hq/server/scripts/axon-news-live-check.ts": {
       "bytes": 1065,
@@ -295,6 +271,14 @@
       "bytes": 26225,
       "sha256": "00bfe97306fe32d94207e92cde803d891270146189142c1bd4620be69369a25c"
     },
+    "bot-hq/server/scripts/axon-whatsapp-actions-test.ts": {
+      "bytes": 10777,
+      "sha256": "e88e84f9e9c82232afdd2d7b458b0e2825717ce30a037fe095dd0076571a7c30"
+    },
+    "bot-hq/server/scripts/axon-whatsapp-test.ts": {
+      "bytes": 13252,
+      "sha256": "9e9f2fdf1a5417decc5ac15372d31a45a2edd3714ad5a65f0acadebc88990c48"
+    },
     "bot-hq/server/scripts/axon-workspace-test.ts": {
       "bytes": 20682,
       "sha256": "508c0b81a7185c1533969bd9f40f934a4e705f56f4db2982b33515ca446892c4"
@@ -310,6 +294,10 @@
     "bot-hq/server/scripts/desk-test.ts": {
       "bytes": 17695,
       "sha256": "21a7f97be1dfc04a157665346f734bb4d20c6a31994f61d7327b33d09d0dd970"
+    },
+    "bot-hq/server/scripts/fixtures/buffer-mcp-schemas.json": {
+      "bytes": 79540,
+      "sha256": "f5010313a617789b299444d1ba1705c90f48e37bb0354b2cc8a8ce799947cf45"
     },
     "bot-hq/server/scripts/local-model-test.ts": {
       "bytes": 11003,
@@ -343,9 +331,13 @@
       "bytes": 24649,
       "sha256": "cb7f267c01afd6b85402a4ff9290c2de154d472516f60097a94c3342874a1439"
     },
+    "bot-hq/server/src/axon-agent-actions.ts": {
+      "bytes": 35001,
+      "sha256": "0e282eb3be1702f65c513dc571254bd35ac1392e350d5948e5278c3bf48dd928"
+    },
     "bot-hq/server/src/axon-connectors.ts": {
-      "bytes": 21493,
-      "sha256": "bd3228da9c33b30db434964b1390463ab6d99583732f11f7beb291b66f7ba385"
+      "bytes": 23689,
+      "sha256": "c1b07278a9d5e108d94560742d258ec7e6b47332cd15a7b6884cddf5cc7df72a"
     },
     "bot-hq/server/src/axon-contact-import.ts": {
       "bytes": 9667,
@@ -354,6 +346,10 @@
     "bot-hq/server/src/axon-marketing.ts": {
       "bytes": 23922,
       "sha256": "e0fcaa21007e88889c616c19838219f85ecaedddf97c5b5c755bf3b9f8cbce20"
+    },
+    "bot-hq/server/src/axon-mcp-client.ts": {
+      "bytes": 26194,
+      "sha256": "e86e156d85ae0717d54e8593826303e920d843a9b9bb4bc9c97a468a8e5efc7b"
     },
     "bot-hq/server/src/axon-news-sources.ts": {
       "bytes": 17390,
@@ -375,9 +371,13 @@
       "bytes": 45662,
       "sha256": "c0e1566e9dd9f6e5e5b2645cc223a3f384b34e305992c75905668bdfc9634060"
     },
+    "bot-hq/server/src/axon-whatsapp.ts": {
+      "bytes": 20536,
+      "sha256": "87afd4910df499a06aa2196e6ab0706baa8827bb8042dfcd1bc39fbb9da6b58b"
+    },
     "bot-hq/server/src/axon-workspace.ts": {
-      "bytes": 52640,
-      "sha256": "e0fa389141213424ea8fb0a0c1e1d664eb49578a4a600488afc032559fe28f5f"
+      "bytes": 52821,
+      "sha256": "76dd2b3ad0d03164dce99640c468e9ab66a200ded6397eb822347a1d3767e620"
     },
     "bot-hq/server/src/box.ts": {
       "bytes": 3967,
@@ -444,8 +444,8 @@
       "sha256": "e2d3e89230af7b5976e1cdf5aeb418bd9cef01c3a85a0771d4887a4b191eeff4"
     },
     "bot-hq/server/src/local-model.ts": {
-      "bytes": 4542,
-      "sha256": "c5b16570aa554d7eace2d75daab4a69debd3ba8d1d4f203181a19137c3278131"
+      "bytes": 5043,
+      "sha256": "b50166ecf6f1e6eb9395f35b30e4a639417b6b112bd3f5bac3de2c3e479d38a3"
     },
     "bot-hq/server/src/local-research-catalog.ts": {
       "bytes": 196662,
@@ -460,8 +460,8 @@
       "sha256": "195de2336c1c8bade65e68aab58b29d8f10d4ab8f26a9f57a31cde69486bbec4"
     },
     "bot-hq/server/src/local-text-server.ts": {
-      "bytes": 34376,
-      "sha256": "3d2cd700a08d7e55e70f52b8b0e49f1945708f5bc9336494c44806c9b3ce7dbb"
+      "bytes": 40670,
+      "sha256": "6b4bafe62e53f95fee014b3f2a94218a4b96e07853f83cd8bcad5d5fb7c46f1b"
     },
     "bot-hq/server/src/mcp.ts": {
       "bytes": 7304,
@@ -803,6 +803,10 @@
       "bytes": 200,
       "sha256": "7d7a062b1af57f72eedbf02450142a0a5cc5fdb0be54a3aab0e78e7e301040b1"
     },
+    "bot-hq/web/scripts/google-agent-worker-test.mjs": {
+      "bytes": 16889,
+      "sha256": "5328a266a878efeac76bb24f0761a8d7e37bd761af8080ceeeceb4ec71e94e08"
+    },
     "bot-hq/web/src/App.tsx": {
       "bytes": 5301,
       "sha256": "4fe76d157afcfdeb46953a2ac32f09412620b70266dc4dbf49397eb1daf039e0"
@@ -820,8 +824,8 @@
       "sha256": "30de40f0472b8b9be792318bbb5c208c156a732b918df485530331a16729ec36"
     },
     "bot-hq/web/src/components/AxonConnectors.tsx": {
-      "bytes": 15624,
-      "sha256": "ba96717c98e05138191a8ab4d12e012ee3a270069a5e0372adbd145d9bf586e1"
+      "bytes": 17055,
+      "sha256": "bf374e1bfe74298fd103a6bd130dd83173f4731ad48151e523fb43fcf132a89b"
     },
     "bot-hq/web/src/components/AxonContacts.tsx": {
       "bytes": 33667,
@@ -832,12 +836,16 @@
       "sha256": "be226aea6f6bd35201110b1e1e7aa20896c5f9b332693dbac7aba65a25823aab"
     },
     "bot-hq/web/src/components/AxonInspector.tsx": {
-      "bytes": 27323,
-      "sha256": "13c50ed79eee996f0fea1d59f74314df25697cf64b5438ef5461e462ea8f9cb6"
+      "bytes": 28329,
+      "sha256": "620c4a83171821acab26fec76b715c02861619de98c520e3cc08878231846c7a"
     },
     "bot-hq/web/src/components/AxonMarketing.tsx": {
       "bytes": 25584,
       "sha256": "add10920ecffbd225b4f459a8a456df087e16ed4b7a7b1248565700eccd3d7cf"
+    },
+    "bot-hq/web/src/components/AxonMcpConnectors.tsx": {
+      "bytes": 10634,
+      "sha256": "32b35d048862eca02ce6b798d434f13cb188bce7b4c28edc86113e93290e3430"
     },
     "bot-hq/web/src/components/AxonModelStatus.tsx": {
       "bytes": 2423,
@@ -860,12 +868,16 @@
       "sha256": "c467147956cf3763df26a5af3f1f2f929801a74b1820340a3b41e61518d17f98"
     },
     "bot-hq/web/src/components/AxonSettings.tsx": {
-      "bytes": 30319,
-      "sha256": "a00875447ea9d0abc88f52dacab52df48b6df56e65fdcd5add34ff091d865adc"
+      "bytes": 30482,
+      "sha256": "23cc7e299d1146d5330924f3f1dd0f674e3b9bf39672870ef0672a24a4d4263c"
     },
     "bot-hq/web/src/components/AxonTracker.tsx": {
       "bytes": 19102,
       "sha256": "5e716d639c6e7c91689207d6d8130769d5d672930fb947f4d9eca7bf534d9e66"
+    },
+    "bot-hq/web/src/components/AxonWhatsApp.tsx": {
+      "bytes": 12975,
+      "sha256": "aeed9f05fb99de9b844949025d468422ba4b493fe0b2d54ef6df16b2c346b5b3"
     },
     "bot-hq/web/src/components/AxonWorkspacePages.tsx": {
       "bytes": 47215,
@@ -887,6 +899,10 @@
       "bytes": 16971,
       "sha256": "b5f0b31dedec16925b539e5328b37bc1b4fcd1baf8d6958bed1c124f824309f4"
     },
+    "bot-hq/web/src/components/ConnectedAgentModes.tsx": {
+      "bytes": 9130,
+      "sha256": "b936771cf3c29757a515e47016c3040dbcf9f166f81df9c835d45a873ea447ec"
+    },
     "bot-hq/web/src/components/DetailsPanel.tsx": {
       "bytes": 7779,
       "sha256": "9ffa7a2ab4326659dc9dc128433562208664c28d27050ae556e39a7c8deccf07"
@@ -894,6 +910,10 @@
     "bot-hq/web/src/components/EngineSettings.tsx": {
       "bytes": 10089,
       "sha256": "702a1bd23efa1853c5152414967bca7ca1c15ffd2680bd07cbce0bc9bc3f3184"
+    },
+    "bot-hq/web/src/components/GoogleAgentMode.tsx": {
+      "bytes": 14385,
+      "sha256": "accfbf29663bb6938a85b18c25ddaae54394a61e1710958af28e0b5410b2882c"
     },
     "bot-hq/web/src/components/Icon.tsx": {
       "bytes": 3157,
@@ -904,8 +924,8 @@
       "sha256": "5247feeb2e0465a2fa527105dbbfe88b1d0b3668a5151eae1b71605450d19101"
     },
     "bot-hq/web/src/components/LocalTextApp.tsx": {
-      "bytes": 50621,
-      "sha256": "cb8894ccb70f58a0e5289227743c899764554a88b0cfa86a232fc606b288ec59"
+      "bytes": 57715,
+      "sha256": "185d7e5a1ee5009106d32e96ca0853452acf6dfd99aa1fb652cef40009473656"
     },
     "bot-hq/web/src/components/Markdown.tsx": {
       "bytes": 845,
@@ -1016,16 +1036,16 @@
       "sha256": "d27ed082d1b59ad0082756583b5438ae916b4acb68bbf7c3e4df9703901223f8"
     },
     "bot-hq/web/src/lib/axon-native.ts": {
-      "bytes": 853,
-      "sha256": "722e10fa7d8f3211a44ea18d27011dc34933b9c9b7cb9bc7617f42ca24bc0f54"
+      "bytes": 1343,
+      "sha256": "375a970d00ab14bb44c55ece4b446495424e7cef5e023eb71e823e449710ecf2"
     },
     "bot-hq/web/src/lib/axon-news-types.ts": {
       "bytes": 3039,
       "sha256": "15a68da41b0c898e438484545a7edb8df44369f34d0e658c82c227db34d75d57"
     },
     "bot-hq/web/src/lib/axon.ts": {
-      "bytes": 4319,
-      "sha256": "081629717ba44f84ffa133ab5e7d12021903db955cdfbc52a592e843d4bdcd0a"
+      "bytes": 4936,
+      "sha256": "a8fcbfe61960e9a9bc76682d99c2f7a524b955dc5b17487d7fbe583d2943a453"
     },
     "bot-hq/web/src/lib/colors.ts": {
       "bytes": 2461,
@@ -1046,6 +1066,14 @@
     "bot-hq/web/src/lib/events.ts": {
       "bytes": 1543,
       "sha256": "869fe2acb3a0dd3440edf12058ab9bf3aed9d13021c74126068a4debae3596a5"
+    },
+    "bot-hq/web/src/lib/google-agent-worker.ts": {
+      "bytes": 5554,
+      "sha256": "6a7ae2b10c6858c5fe95c6a902e83d8364bbee72db29886dfcaa31b1c18487b1"
+    },
+    "bot-hq/web/src/lib/mcp.ts": {
+      "bytes": 1425,
+      "sha256": "317ed68dc73a0ddda0bf2e6dcb801bbcbde15620a629b6a6b9858121c944b183"
     },
     "bot-hq/web/src/lib/phrases.ts": {
       "bytes": 3861,
@@ -1099,6 +1127,10 @@
       "bytes": 9242,
       "sha256": "a882dec8a9b2d6e81f9a7dcf1c912cf75e02a38fcd6dcbfd960ecd30245f9411"
     },
+    "bot-hq/web/src/styles/google-agent.css": {
+      "bytes": 2787,
+      "sha256": "e17ebbced59c3d9c5b97a96e2ed2f94377d65fd01d957559e7b64e385ad367e8"
+    },
     "bot-hq/web/src/styles/local-research.css": {
       "bytes": 8619,
       "sha256": "12dbf807d79597079a088b960afda002e06ab39184d4fe7f4c0b616c21ae1249"
@@ -1106,6 +1138,10 @@
     "bot-hq/web/src/styles/local-text.css": {
       "bytes": 12630,
       "sha256": "b4a6b6e265fd64d3bc897b20ee8f710f7df99d5c63a2350d5ac1a190a116312c"
+    },
+    "bot-hq/web/src/styles/mcp.css": {
+      "bytes": 1572,
+      "sha256": "9cac01655a29974650d7fe8f69a0fdccb0595f1d9e341477923adf02bac67a36"
     },
     "bot-hq/web/src/styles/modals.css": {
       "bytes": 12937,
@@ -1180,12 +1216,24 @@
       "sha256": "220baed01e3209e032f445f4936d6187ff6124879b956f7f7442bccfba7d63b0"
     },
     "docs/connector-setup.md": {
-      "bytes": 4452,
-      "sha256": "200a6c1c736d6b1cb39ea015c0e4b8438c79c0be9c75aae6ee7c6b27fe079d08"
+      "bytes": 8207,
+      "sha256": "2439439d5a4c1c75031d4ecdfdeb5f9a075d55023199cb19e4ebbf61e28e4f89"
+    },
+    "docs/direct-whatsapp.md": {
+      "bytes": 3376,
+      "sha256": "988fe7a44ad021b5b5661fc13025f07c25fd18f4eab5605c6edabf9289fb631e"
+    },
+    "docs/google-agent-actions.md": {
+      "bytes": 5052,
+      "sha256": "44aa8021bdb21e0b2ac074c401c3952e3b776cdd317bbebf5a1314b6a5643a94"
     },
     "docs/local-oss-release.md": {
       "bytes": 6759,
       "sha256": "b20774f8d7117881a3de581e9b32a178a7de6285b02275ac413f5d141a17273a"
+    },
+    "docs/mcp-and-messages.md": {
+      "bytes": 6506,
+      "sha256": "eeb22ddf10de55ea2a7497f9800d8c19da8fd1bfdb99cef3736111a5115920f8"
     },
     "docs/research-provenance.md": {
       "bytes": 2254,
@@ -1212,12 +1260,12 @@
       "sha256": "164d5fe0b5935902d32a93591171127196535d672b461546234ccddcd6b0e793"
     },
     "mac-wrapper/Sources/BotHQ/NativeBridge.swift": {
-      "bytes": 22037,
-      "sha256": "48465cffa9ac1417f9c83e28bfb41ddffaf03bbe0ba18ab80cdd70f143c5e827"
+      "bytes": 25194,
+      "sha256": "49b3527c9ed1823144772e990a0a729e364ed0fc18d512aa03e9936579833ec7"
     },
     "mac-wrapper/Sources/BotHQ/NativeConnectorCredentials.swift": {
-      "bytes": 3712,
-      "sha256": "44421732abbcae58e865dc19e52633564e7a7f38e8664502a4b48c59f4d39825"
+      "bytes": 4726,
+      "sha256": "908ed73aa0cd0a49c587c0239c3b7786c183e6f81a27ea36aa71322cffab9b8e"
     },
     "mac-wrapper/Sources/BotHQ/NativeContactHandoff.swift": {
       "bytes": 2454,
@@ -1227,13 +1275,25 @@
       "bytes": 10216,
       "sha256": "04c6b69596810ee1099801a8bbaad855033cc6460d392f735ef61e37fe574e2c"
     },
+    "mac-wrapper/Sources/BotHQ/NativeEmailSignature.swift": {
+      "bytes": 9463,
+      "sha256": "d4d4b197aea7bd0bdd822d4b815983dbf270c296bc593a59a8350e0f0510408f"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeGoogleActions.swift": {
+      "bytes": 40027,
+      "sha256": "34597d0b257d5a3648ea825f05b7a0cf22ef17d057a7bf87b8d56d01599bcc35"
+    },
     "mac-wrapper/Sources/BotHQ/NativeGoogleContacts.swift": {
       "bytes": 25431,
       "sha256": "b939fa5f6f53ce834e8a9abe8b3ce5e823f8beb0b4ac8d2a73c81724a06490a5"
     },
     "mac-wrapper/Sources/BotHQ/NativeGoogleWorkspace.swift": {
-      "bytes": 24629,
-      "sha256": "538a58819da7bb06c645efa3b6767b77bf0bd8d97e2ab591a3c9e724191743c2"
+      "bytes": 29268,
+      "sha256": "33c062ab088d3ec0f7c329f030bd0734f8bc0f1f729a5197fd52b0238ad536f2"
+    },
+    "mac-wrapper/Sources/BotHQ/NativeMessages.swift": {
+      "bytes": 12174,
+      "sha256": "3135c1d31eb968139004d4bf605b4dec23eb89e1546faa351a6abf676a33dca2"
     },
     "mac-wrapper/Sources/BotHQ/NativePanelCompletion.swift": {
       "bytes": 1576,
@@ -1256,8 +1316,8 @@
       "sha256": "41a4a1090335e9c47710cc957d1c6419a5b3214e1c36505cff47491f3709ce6c"
     },
     "mac-wrapper/Sources/BotHQ/NativeStore.swift": {
-      "bytes": 11737,
-      "sha256": "9ad93feb1550a502d0fb047b7f5a5db023292d7078b37e74a5eb7245f9b37a39"
+      "bytes": 11915,
+      "sha256": "90b81230eb4f211f6fc0d35fa90a05719ad5886a21159145f7f2f110c8d67110"
     },
     "mac-wrapper/Sources/BotHQ/NativeVerificationProfile.swift": {
       "bytes": 4853,
@@ -1280,8 +1340,8 @@
       "sha256": "ca5b22fbbf19f9ab10ac3d3268ec1916fae3359ce3af240180e566eda35f1b4c"
     },
     "mac-wrapper/script/build.sh": {
-      "bytes": 5106,
-      "sha256": "882cc437a4e362644c7204e1079052518b8a223f6da150840a4edb6a8d2a873c"
+      "bytes": 5268,
+      "sha256": "137379670dfdb03ddf572fcda6124f5d78d2e1fefe8fb5a79acdffb70b92fe29"
     },
     "mac-wrapper/script/test_local_installation.sh": {
       "bytes": 328,
@@ -1294,6 +1354,18 @@
     "mac-wrapper/script/test_native_contacts.sh": {
       "bytes": 1205,
       "sha256": "c409db946a45851ba9281a5803f9a3dbdfd9a27e7c6d48d60a2fbf779a0ae1df"
+    },
+    "mac-wrapper/script/test_native_email_signature.sh": {
+      "bytes": 356,
+      "sha256": "296c7895c590877c9055afae8cac583cc5b3ae2ec78b6d54ce1623926fdd2987"
+    },
+    "mac-wrapper/script/test_native_google_actions.sh": {
+      "bytes": 483,
+      "sha256": "dc71c1b7b22f40eda4193e8bf92faff0b6131dfa4190d036485ecc973bcc76cf"
+    },
+    "mac-wrapper/script/test_native_messages.sh": {
+      "bytes": 437,
+      "sha256": "874a03b8f0160341d200cdc6b38fe91bac68e78d3ff77949dda1eba56c4ba01c"
     },
     "mac-wrapper/script/test_native_panels.sh": {
       "bytes": 517,
@@ -1316,8 +1388,8 @@
       "sha256": "2feeb856e1d0d928ff5d3f29a707c8cc0034d5b8f71e18163a9f9be3d4a69b60"
     },
     "mac-wrapper/script/test_native_workspace.sh": {
-      "bytes": 1193,
-      "sha256": "29c98f56b6390daefc759b1db67f12be33cae3cd90b4ab7e70c73cd0d14497a7"
+      "bytes": 1308,
+      "sha256": "443d1579618043a43ac94435da797837e48fb3fc2939bedbf071f127f83b5fef"
     },
     "mac-wrapper/tests/LocalInstallationTests.swift": {
       "bytes": 1394,
@@ -1330,6 +1402,18 @@
     "mac-wrapper/tests/NativeContactsTests.swift": {
       "bytes": 12127,
       "sha256": "f2819a1e62d4d10f25961d63af0717ce5bab771d436b7a7d7c7e3a4c67d575b3"
+    },
+    "mac-wrapper/tests/NativeEmailSignatureTests.swift": {
+      "bytes": 6423,
+      "sha256": "e39322b18ebb7c1d81db988807bf4ccc065f4616c4ba0d5c81f177af0c7a793a"
+    },
+    "mac-wrapper/tests/NativeGoogleActionTests.swift": {
+      "bytes": 27701,
+      "sha256": "fc4d2058322aeb19ccf5735d6715f7a4d040a0263fd4ed44b15d3c931f6e3ecc"
+    },
+    "mac-wrapper/tests/NativeMessagesTests.swift": {
+      "bytes": 8321,
+      "sha256": "ec89f6250ce9c4459bfa74c59081ff0d57930c5da2eae8b5c49efb753a76984e"
     },
     "mac-wrapper/tests/NativePanelCompletionTests.swift": {
       "bytes": 3593,
@@ -1348,16 +1432,16 @@
       "sha256": "122ccfd9e14f40b4d780345c93e387046fadfe38a2963953dfc611f894726f42"
     },
     "mac-wrapper/tests/NativePickerProcessTests.swift": {
-      "bytes": 5857,
-      "sha256": "71235037b56e47fb2bf4e3a6b4228b7c307fb4f96f72acdbecdbedaa90636517"
+      "bytes": 9476,
+      "sha256": "9539ac5312aa23f6d0b3689a27dbf3ba72fdad0cc1e453db93f3e8116c1d4790"
     },
     "mac-wrapper/tests/NativeVerificationProfileTests.swift": {
       "bytes": 5066,
       "sha256": "8a3610503373f7952882a0f38d28f812387a4a7918b9a69e94580c3dabe845c9"
     },
     "mac-wrapper/tests/NativeWorkspaceTests.swift": {
-      "bytes": 12283,
-      "sha256": "f99b50449bb36ce883cfb349e610fba67b7c83c8b301001b64903629ef86a9ab"
+      "bytes": 17363,
+      "sha256": "2c5b77a116ceda06d82335b8cf6318b7beb348151dd6ee59f9253158b86f09d6"
     },
     "mortgage-bot-team/00-START-HERE.md": {
       "bytes": 5648,
@@ -1408,16 +1492,16 @@
       "sha256": "330fdc7512b477df0115319ff6fd3a007c44a5d7438ee0753be8f31bf15a004c"
     },
     "script/build_and_run.sh": {
-      "bytes": 4289,
-      "sha256": "2cda14f3d860081c6d242173a1b269fb8f4b2aa043e74a3ca76831fe7d4944bf"
+      "bytes": 4552,
+      "sha256": "cb4cc9257ce8400ff4c42a7b661b732f7ae4688f5554aecbcd16cb4438f63d57"
     },
     "script/package_macos.sh": {
-      "bytes": 6652,
-      "sha256": "a106e30df1389e7f679fd7515cccd5fba8f723d00e50aaf31efdb8c590264351"
+      "bytes": 6745,
+      "sha256": "d9b3694bd242f92f5bd75f50d03ea849ae60768c9772d9fa825aae594f0b6d7f"
     },
     "script/prepare-source-release.py": {
-      "bytes": 11872,
-      "sha256": "fe2e252336cd927f7bcd0d6e64670c8406933cfaddcb3f6662b51efca9dccec8"
+      "bytes": 11959,
+      "sha256": "99d126ea4435ad203225ee0e92d559fbae4b680b6deb2c8186a48065497cf6c8"
     },
     "script/setup-local.mjs": {
       "bytes": 2650,
