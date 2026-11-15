@@ -79,17 +79,25 @@ The optional direct WhatsApp Web adapter uses these pinned runtime packages:
 | --- | --- | --- |
 | `@whiskeysockets/baileys` | `7.0.0-rc13` | MIT; copyright 2025 Rajeh Taher/WhiskeySockets. [Upstream](https://github.com/WhiskeySockets/Baileys), [license](LICENSES/Baileys-MIT.md). |
 | `qrcode` | `1.5.4` | MIT; copyright 2012 Ryan Day. [Upstream](https://github.com/soldair/node-qrcode), [license](LICENSES/QRCode-MIT.md). |
-| `whatsapp-rust-bridge` | `0.5.4` | Package metadata declares MIT; JavaScript/WebAssembly dependency. [Declared upstream](https://github.com/jlucaso1/whatsapp-rust-bridge). The installed package does not contain a LICENSE file; obtain its authoritative notice before a public runtime release. |
-| `libsignal` | `6.0.0` | GPL-3.0; transitive Baileys cryptography dependency. [Upstream source](https://github.com/WhiskeySockets/libsignal-node), [license](LICENSES/libsignal-GPL-3.0.md). |
+| `whatsapp-rust-bridge` | `0.5.4` | MIT; npm metadata declares MIT and names the author. [Declared upstream](https://github.com/jlucaso1/whatsapp-rust-bridge), [license](LICENSES/whatsapp-rust-bridge-MIT.md). The published tarball ships no LICENSE file and neither upstream repository has one; the notice is reconstructed from npm registry metadata plus the MIT licence of the Rust project the bridge compiles, and is reproduced here so redistributed copies carry it. |
+| `libsignal` | `6.0.0` | GPL-3.0; transitive Baileys cryptography dependency. Pure JavaScript — no Rust source, native binary or WebAssembly is shipped in the package, and its complete source is included in the published tarball, so the corresponding source travels with the package. [Upstream source](https://github.com/WhiskeySockets/libsignal-node), [license](LICENSES/libsignal-GPL-3.0.md). |
 
 The project-authored source retains its existing MIT license, and the supplied
 artwork retains its separate CC BY 4.0 attribution. These licenses do **not**
 replace the GPL-3.0 terms on libsignal. A combined runtime containing this
 adapter must not be represented as MIT-only. Any public distribution must
 satisfy the applicable GPL terms, including the corresponding-source and
-license requirements for the combined work. The 3.4.0 local validation build
+license requirements for the combined work. The 3.5.0 local validation build
 is not a newly authorized public binary release. The lockfile identifies exact
 package artifacts; runtime packaging retains dependency source and licenses.
+
+The WebAssembly embedded in `whatsapp-rust-bridge` is compiled from the
+`wacore-*` crates of the MIT-licensed Rust project `whatsapp-rust`
+(`github.com/oxidezap/whatsapp-rust`) together with permissive dependencies.
+The GPL-3.0 `libsignal-node` project is a **development-only** dependency of
+that bridge and is not compiled into the published package. The GPL-3.0 terms
+that apply to a redistributed runtime therefore attach to `libsignal`, whose
+source and licence text are carried with it.
 
 Baileys is an unofficial WhatsApp Web client and is not endorsed by WhatsApp
 or Meta. Linking requires the account owner's explicit phone approval. This
