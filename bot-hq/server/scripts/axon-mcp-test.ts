@@ -83,7 +83,31 @@ try{
  const bufferChat=await enabled();assert.throws(()=>queue(bufferChat,ba as any),/paused/);await api(`/chats/${bufferChat.id}/mcp-mode`,'PATCH',{enabled:true,contextConsent:true,connectionIds:['buffer']});assert.throws(()=>queue(bufferChat,{...ba,arguments:{...ba.arguments,saveToDraft:false}}as any),/saveToDraft/);assert.throws(()=>queue(bufferChat,{...ba,arguments:{...ba.arguments,mode:'shareNow'}}as any),/publishing/);const bufferAction=queue(bufferChat,ba as any);assert.equal(bufferAction.state,'review');await api(`/agent-actions/${bufferAction.id}/decision`,'POST',{approved:true});await actions.executeQueuedMCP('ownerA',bufferAction.id,new AbortController().signal);assert.equal(actions.actionHistory('ownerA',bufferChat.id)[0].state,'succeeded');assert.ok(bc.tools.filter(t=>['create_post','list_channels','list_posts','get_post'].includes(t.name)).every(t=>!t.blocked));assert.throws(()=>queue(chat(),{...ba,arguments:{...ba.arguments,channelId:'not-a-provider-id'}}as any),/schema/);assert.throws(()=>queue(chat(),{...ba,arguments:{...ba.arguments,dueAt:'not-a-timestamp'}}as any),/schema/);assert.ok(bc.tools.filter(t=>['execute_query','execute_mutation','delete_post','update_post'].includes(t.name)).every(t=>t.blocked));assert.ok(!mcp.mcpModelCatalog('ownerA',['zapier']).includes('"connectionId":"buffer"'));
  const bufferRead=bc.tools.find(t=>t.name==='get_account');await api(bufferBase+'/tools/get_account','PATCH',{policy:'delegated',schemaHash:bufferRead.schemaHash});const br=chat();await api(`/chats/${br.id}/mcp-mode`,'PATCH',{enabled:true,contextConsent:true,connectionIds:['buffer']});const bra=queue(br,{...ba,toolName:'get_account',schemaHash:bufferRead.schemaHash,arguments:{}}as any);assert.equal(bra.state,'queued');await actions.executeQueuedMCP('ownerA',bra.id,new AbortController().signal);assert.equal(actions.actionHistory('ownerA',br.id)[0].state,'succeeded');
  assert.equal((await api('/mcp/connections/evil/credentials','POST',{expectedOwner:'ownerA',connectionToken:TOKEN})).status,404);
+ // A tool whose saved policy requires exact review must reach the review queue
+ // when the MODEL proposes it, dispatch nothing until the exact action is
+ // approved, and then dispatch exactly once. A denial dispatches nothing.
+ {
+  const live=mcp.mcpConnectionView('ownerA','buffer'),reviewTool=live.tools.find(t=>t.name==='create_post')!;
+  const reviewArgs={connectionId:'buffer',revision:live.revision,schemaHash:reviewTool.schemaHash,toolName:'create_post',arguments:{channelId:'a'.repeat(24),schedulingType:'automatic',text:'Synthetic draft',saveToDraft:true}};
+  for(const approved of [true,false]){
+   const ch=await enabled();await api(`/chats/${ch.id}/mcp-mode`,'PATCH',{enabled:true,contextConsent:true,connectionIds:['buffer']});
+   const before=callCount;let turns=0;
+   const run=actions.runGoogleAgent({owner:'ownerA',chat:{...ch,...actions.agentPermissions(ch.id,'ownerA')},requestId:ch.requestId,input:'Synthetic MCP review request',signal:new AbortController().signal,model:async()=>{turns++;return turns===1?JSON.stringify({type:'action',operation:'mcp.call',args:reviewArgs}):JSON.stringify({type:'final',text:'Synthetic review finished.'})}});
+   let pending:any=null;for(let i=0;i<120&&!pending;i++){pending=(await api('/agent-actions/pending')).data.actions.find((a:any)=>a.chatId===ch.id);if(!pending)await new Promise(r=>setTimeout(r,25))}
+   assert.ok(pending,'The model-proposed action never reached the review queue.');
+   assert.equal(pending.state,'review');
+   assert.equal(callCount,before,'A review-gated tool was dispatched before the exact action was approved.');
+   await api(`/agent-actions/${pending.id}/decision`,'POST',{approved});
+   const reply=await run;
+   const history=actions.actionHistory('ownerA',ch.id);
+   assert.equal(history.length,1);
+   assert.equal(history[0].state,approved?'succeeded':'cancelled');
+   assert.equal(callCount,before+(approved?1:0),'The provider call count did not match the review decision.');
+   if(approved)assert.match(reply,/succeeded/);else assert.match(reply,/did not complete successfully \(cancelled\)/);
+  }
+ }
  console.log('PASS fixed direct Buffer SDK transport; explicit per-chat connection selection; real synthetic draft call; publishing/edit/GraphQL/delete blocked; reviewed writes and delegated reads');
+ console.log('PASS model-proposed review-gated tool waits for the exact-action approval, dispatches nothing before it, dispatches exactly once after it, and a denial dispatches nothing');
  // The provider can change after local discovery. Revalidate before tools/call.
  const drift=await enabled(),driftAction=queue(drift),driftBefore=callCount;changed=!changed;await actions.executeQueuedMCP('ownerA',driftAction.id,new AbortController().signal);assert.equal(callCount,driftBefore);assert.equal(actions.actionHistory('ownerA',drift.id)[0].state,'failed');changed=!changed;await api(base+'/discover','POST',{});
  const waiting=await enabled(),wa=queue(waiting);mode='wait';const work=actions.executeQueuedMCP('ownerA',wa.id,new AbortController().signal);for(let i=0;i<100&&callCount===driftBefore;i++)await new Promise(r=>setTimeout(r,5));await importToken();await work;assert.equal(actions.actionHistory('ownerA',waiting.id)[0].state,'uncertain');mode='success';await config();await policy('synthetic_managed','delegated');
