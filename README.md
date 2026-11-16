@@ -1,6 +1,6 @@
 # AxonCROS — a local Mac workspace
 
-**Local source preview — 3.5.0.** This is an independently run Mac workspace with optional Google, MCP, Mac Messages and direct WhatsApp actions. External accounts require their owner’s authorization; mortgage borrower examples remain synthetic. Public binary signing/notarization and physical audio acceptance are not complete.
+**Local source preview — 3.6.0.** This is an independently run Mac workspace with optional Google, MCP, Mac Messages and direct WhatsApp actions. External accounts require their owner’s authorization; mortgage borrower examples remain synthetic. Public binary signing/notarization and physical audio acceptance are not complete.
 
 AxonCROS is a free, open-source local application for chats, five draft mortgage assistants, research citations, files, contacts, tracking and marketing drafts. Each person runs their own copy on their own Mac. It is not a hosted borrower system or an automatically deployed team.
 
@@ -18,7 +18,7 @@ Requirements: macOS13 or newer for the wrapper, a compatible Node.js22 or newer,
 
 First-time setup creates private local configuration only when it is absent. The installer preserves existing app/runtime/configuration backups. A local model runtime must be configured and running to generate replies; the default `ollama-local` route uses Ollama directly on127.0.0.1:11434, with an explicit context window. `openai-local` is an optional compatibility route. Installing AxonCROS does not download a model, create accounts or purchase inference. Model weights have their own licenses and hardware requirements. Existing explicitly configured subscription-gateway installations remain separate and must not be overwritten.
 
-Read [local installation and release scope](docs/local-oss-release.md), [Google read/write agent setup](docs/google-agent-actions.md), [other connector setup](docs/connector-setup.md) and [security boundaries](SECURITY.md) before use. The main Hermes installation is outside this app’s ownership. Never paste credentials into chat or commit them.
+Read [local installation and release scope](docs/local-oss-release.md), [Google read/write agent setup](docs/google-agent-actions.md), [model routes](docs/model-routes.md), [other connector setup](docs/connector-setup.md) and [security boundaries](SECURITY.md) before use. The main Hermes installation is outside this app’s ownership. Never paste credentials into chat or commit them.
 
 `bot-hq/.env.example` is an optional legacy **full-mode** template, not the primary Mac setup. Do not copy it over the automatically created local configuration. The app has no automatic hosted-model fallback. A custom user-managed `openai-local` service could itself proxy a cloud service; its behavior and possible costs are the user's responsibility. The default Ollama route accepts local models and rejects remote/cloud model manifests.
 

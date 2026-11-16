@@ -92,7 +92,7 @@ export function App() {
       .then(async (response) => {
         if (!response.ok) throw new Error('Server unavailable');
         const health = await response.json();
-        if (!health.ok || !(health.engine === 'hermes' || (health.mode === 'local-text' && ['ollama-local', 'openai-local'].includes(health.engine)))) throw new Error('Unexpected server');
+        if (!health.ok || !(health.engine === 'hermes' || (health.mode === 'local-text' && ['ollama-local', 'openai-local', 'codex-cli', 'openrouter'].includes(health.engine)))) throw new Error('Unexpected server');
         if (health.mode && !['full', 'local-text'].includes(health.mode)) throw new Error('Unknown app mode');
         if (active) setMode(health.mode === 'local-text' ? 'local-text' : 'full');
       })

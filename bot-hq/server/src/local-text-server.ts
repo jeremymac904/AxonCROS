@@ -10,15 +10,26 @@ import { parseEnv } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { env } from './env.js';
 import { localModelReady, localModelResponse, localModelURL, localResearchInput, LOCAL_INPUT_BYTES, LocalModelHTTPError } from './local-model.js';
+import { codexCliReply, CodexCliError } from './codex-cli-provider.js';
+import { openRouterReply, openRouterKey, OpenRouterError } from './openrouter-provider.js';
 import { localTextProfile, localTextProfiles } from './local-text-profiles.js';
 import { researchDocuments, researchDocument, researchSnapshotId, researchSnapshotDate, researchNotice } from './local-research-catalog.js';
 import { retrieveResearch, researchPrompt, researchEvidence, savedResearch } from './local-research.js';
 
-const usesLocalModel = env.localModelProvider !== 'hermes';
-const MODEL = usesLocalModel ? env.localModel : 'gpt-6.1-sol';
+const usesHermesGateway = env.localModelProvider === 'hermes';
+const usesCodexCli = env.localModelProvider === 'codex-cli';
+const usesOpenRouter = env.localModelProvider === 'openrouter';
+const usesLocalModel = env.localModelProvider === 'ollama-local' || env.localModelProvider === 'openai-local';
+const MODEL = usesCodexCli ? (env.codexCliModel || 'gpt-6.1-sol')
+  : usesOpenRouter ? (env.openRouterModel || '')
+  : usesLocalModel ? env.localModel
+  : 'gpt-6.1-sol';
 if (usesLocalModel) {
   localModelURL(env.localModelUrl);
   if (!MODEL || MODEL.length > 200 || /[\r\n]/.test(MODEL) || /(?:cloud|https?:)/i.test(MODEL)) throw new Error('Choose a downloaded local model, never a cloud model.');
+}
+if (usesOpenRouter && (!MODEL || MODEL.length > 200 || /[\r\n]/.test(MODEL))) {
+  throw new Error('Choose an OpenRouter model for the metered route.');
 }
 const MAX_TEXT = 12_000;
 const MAX_HISTORY = 60_000;
@@ -74,7 +85,7 @@ function inTree(file: string, root: string): boolean {
 
 // Refuse defaults that could accidentally use the user's main Hermes or existing full-mode DB.
 if (!env.localTextMode || !ownerEmail || launchToken.length < 32 || !process.env.DB_PATH
-    || (!usesLocalModel && (!process.env.HERMES_HOME_PRIMARY || !process.env.HERMES_URL))) {
+    || (usesHermesGateway && (!process.env.HERMES_HOME_PRIMARY || !process.env.HERMES_URL))) {
   throw new Error('Local text mode needs an owner email, private launch token, explicit DB_PATH and isolated Hermes settings.');
 }
 if (appOrigin.protocol !== 'http:' || appOrigin.hostname !== '127.0.0.1'
@@ -83,7 +94,7 @@ if (appOrigin.protocol !== 'http:' || appOrigin.hostname !== '127.0.0.1'
     || !gateway.port || gateway.username || gateway.password || gateway.search || gateway.hash || gateway.pathname !== '/') {
   throw new Error('Local text mode requires explicit loopback-only app and gateway URLs.');
 }
-const hermesHome = usesLocalModel ? null : fs.realpathSync(env.hermesHome);
+const hermesHome = usesHermesGateway ? fs.realpathSync(env.hermesHome) : null;
 const mainPath = path.resolve(os.homedir(), '.hermes');
 const mainHermes = fs.existsSync(mainPath) ? fs.realpathSync(mainPath) : mainPath;
 function canonicalDestination(file: string): string {
@@ -164,6 +175,24 @@ function gatewayKey(): string {
   return key;
 }
 async function gatewayRequest(route: string, init: RequestInit = {}, timeout = 8000) {
+  if (usesCodexCli || usesOpenRouter) {
+    if (route !== '/v1/responses' || typeof init.body !== 'string') throw new Error('Unsupported provider operation.');
+    const body = JSON.parse(init.body);
+    if (typeof body.input !== 'string') throw new Error('This provider requires text.');
+    const agentMode = body.agentMode === true;
+    const signal = AbortSignal.any([lifetime.signal, AbortSignal.timeout(timeout), ...(init.signal ? [init.signal] : [])]);
+    const text = usesCodexCli
+      ? await codexCliReply({
+          bin: env.codexCliBin, ownerHome: env.codexCliHome, home: '', model: MODEL,
+          workspace: path.join(env.supportDir, 'codex-cli-workspace'),
+          privateDir: env.supportDir, timeoutMs: timeout,
+        }, body.input, agentMode, signal)
+      : await openRouterReply({
+          baseUrl: env.openRouterBaseUrl, model: MODEL,
+          keyFile: env.openRouterKeyFile, timeoutMs: timeout,
+        }, body.input, agentMode, signal);
+    return Response.json({ status:'completed', output:[{ type:'message', role:'assistant', status:'completed', content:[{ type:'output_text', text }] }] });
+  }
   if (usesLocalModel) {
     if (route !== '/v1/responses' || typeof init.body !== 'string') throw new Error('Unsupported local model operation.');
     const body = JSON.parse(init.body);
@@ -238,17 +267,30 @@ app.get('/api/local/research/:id', (c) => {
 });
 app.get('/api/local/status', async (c) => {
   try {
+    if (usesCodexCli) {
+      const bin = env.codexCliBin, home = env.codexCliHome;
+      const ready = !!bin && fs.existsSync(bin) && !!home && fs.existsSync(home);
+      return c.json({status:ready ? 'ready' : 'unavailable', model:MODEL, provider:'codex-cli', metered:false, route:'codex-cli',
+        message:ready ? `Connected to the Codex CLI, which signs in with its own ChatGPT account. This route never uses paid credits and never falls back to another provider. It uses the provider's included window to its end and stops when that window is exhausted.`
+          : 'The Codex CLI was not found or is not signed in. Open Codex normally and sign in, then check again.'});
+    }
+    if (usesOpenRouter) {
+      const ready = !!openRouterKey(env.openRouterKeyFile);
+      return c.json({status:ready ? 'ready' : 'unavailable', model:MODEL, provider:'openrouter', metered:true, route:'openrouter',
+        message:ready ? `Connected to OpenRouter with your own key. This route is metered: every token is billed to your OpenRouter account. It is never used as a fallback.`
+          : 'No OpenRouter key is configured. Add your own key to the private provider file, then check again.'});
+    }
     if (usesLocalModel) {
       const ready = await localModelReady(env.localModelUrl, MODEL, AbortSignal.any([lifetime.signal, AbortSignal.timeout(4000)]), env.localModelProvider === 'ollama-local');
-      return c.json({status:ready ? 'ready' : 'unavailable', model:MODEL, message:ready ? `Connected to the downloaded local model ${MODEL}. No hosted API fallback.` : `The local runtime is running, but ${MODEL} is not installed. Download this model in Ollama, then check again.`});
+      return c.json({status:ready ? 'ready' : 'unavailable', model:MODEL, route:env.localModelProvider, metered:false, message:ready ? `Connected to the downloaded local model ${MODEL}. No hosted API fallback.` : `The local runtime is running, but ${MODEL} is not installed. Download this model in Ollama, then check again.`});
     }
     const health = await fetch(`${env.hermesUrl}/health`, { redirect: 'error', signal: AbortSignal.any([lifetime.signal, AbortSignal.timeout(4000)]) });
     if (!health.ok || (await health.json()).platform !== 'hermes-agent') throw new Error();
     const response = await gatewayRequest('/v1/models');
     if (!response.ok || !Array.isArray((await response.json()).data)) throw new Error();
-    return c.json({ status: 'ready', model: MODEL, message: 'Connected to your dedicated ChatGPT gateway. Subscription allowance is checked when you send.' });
+    return c.json({ status: 'ready', model: MODEL, route: 'hermes', metered:false, message: 'Connected to your dedicated ChatGPT gateway. Subscription allowance is checked when you send.' });
   } catch {
-    return c.json({ status: 'unavailable', model: MODEL, message: usesLocalModel ? `Start your local Ollama runtime and download ${MODEL}, then check again. Local records remain available without a model. No cloud fallback is enabled.` : 'The dedicated gateway is unavailable. Start or restart the AxonCROS gateway, then retry.' });
+    return c.json({ status: 'unavailable', model: MODEL, message: usesLocalModel ? `Start your local Ollama runtime and download ${MODEL}, then check again. Local records remain available without a model. No cloud fallback is enabled.` : usesCodexCli ? 'The Codex CLI is unavailable. Open Codex normally and sign in, then retry.' : usesOpenRouter ? 'OpenRouter is unavailable. Check your key and account, then retry.' : 'The dedicated gateway is unavailable. Start or restart the AxonCROS gateway, then retry.' });
   }
 });
 app.get('/api/local/chats', (c) => {
@@ -349,10 +391,19 @@ app.post('/api/local/chats/:id/messages', async (c) => {
   db.prepare('INSERT INTO local_requests VALUES (?,?,?,?,?,?)').run(requestId, userId, chat.id, inputHash, 'pending', now());
   try {
     const invoke = async (modelInput:string,signal:AbortSignal) => {
-      const response = await gatewayRequest('/v1/responses', {
-        method: 'POST', signal, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: MODEL, stream: false, store: false, input:modelInput, instructions, agentMode }),
-      }, 300_000);
+      let response:Response;
+      try{
+        response = await gatewayRequest('/v1/responses', {
+          method: 'POST', signal, headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: MODEL, stream: false, store: false, input:modelInput, instructions, agentMode }),
+        }, 300_000);
+      }catch(error){
+        // A directly configured provider reports its own honest state. It never
+        // falls back to another provider, so the turn simply stops here.
+        if(error instanceof CodexCliError)throw new agentActions.AgentError(error.message,error.status);
+        if(error instanceof OpenRouterError)throw new agentActions.AgentError(error.message,error.status);
+        throw error;
+      }
       if (!response.ok) {
         if(agentMode){
           if(response.status===429)throw new agentActions.AgentError('The model gateway is busy or rate-limited (HTTP 429). A previous upstream turn may still be running after a local timeout. Nothing was retried. Review saved action receipts before a new attempt, so completed work is not duplicated.',429);

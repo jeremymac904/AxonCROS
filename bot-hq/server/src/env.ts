@@ -22,15 +22,28 @@ const mode = process.env.BOT_HQ_MODE ?? 'full';
 if (!['full', 'local-text'].includes(mode)) throw new Error('BOT_HQ_MODE must be full or local-text');
 const localTextMode = mode === 'local-text';
 const localModelProvider = process.env.AXON_MODEL_PROVIDER ?? 'hermes';
-if (!['hermes', 'ollama-local', 'openai-local'].includes(localModelProvider)) throw new Error('AXON_MODEL_PROVIDER must be hermes, ollama-local or openai-local');
+if (!['hermes', 'ollama-local', 'openai-local', 'codex-cli', 'openrouter'].includes(localModelProvider)) throw new Error('AXON_MODEL_PROVIDER must be hermes, ollama-local, openai-local, codex-cli or openrouter');
 
 const hermesHome = process.env.HERMES_HOME_PRIMARY ?? path.join(os.homedir(), '.hermes');
+/** Owner-private application directory, beside the database. */
+const supportDir = path.dirname(path.dirname(path.resolve(process.env.DB_PATH ?? path.join(os.homedir(), 'Library/Application Support/Bot HQ/data/local-text.db'))));
 
 export const env = {
   localTextMode,
   localModelProvider,
   localModelUrl: process.env.AXON_LOCAL_MODEL_URL ?? 'http://127.0.0.1:11434',
   localModel: process.env.AXON_LOCAL_MODEL ?? 'qwen3:4b-instruct',
+  /** The local Codex CLI. It authenticates itself from its own CODEX_HOME. */
+  codexCliBin: process.env.AXON_CODEX_CLI_BIN ?? '/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex',
+  codexCliHome: process.env.AXON_CODEX_CLI_HOME ?? path.join(os.homedir(), '.codex'),
+  codexCliModel: process.env.AXON_CODEX_CLI_MODEL ?? '',
+  /** This route uses the provider's included window to its natural end. */
+  codexCliStopPercent: Number(process.env.AXON_CODEX_CLI_STOP_PERCENT ?? 100),
+  /** OpenRouter is metered. It is only ever used when explicitly selected. */
+  openRouterBaseUrl: process.env.AXON_OPENROUTER_BASE_URL ?? 'https://openrouter.ai/api/v1',
+  openRouterModel: process.env.AXON_OPENROUTER_MODEL ?? '',
+  openRouterKeyFile: process.env.AXON_OPENROUTER_KEY_FILE ?? path.join(supportDir, 'openrouter-key'),
+  supportDir,
   port: Number(process.env.PORT ?? 8787),
   appUrl: process.env.APP_URL ?? 'http://localhost:5173',
   /** Public URL of this server, used for OAuth callbacks. */
