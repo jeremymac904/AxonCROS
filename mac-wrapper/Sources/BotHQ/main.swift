@@ -184,7 +184,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         do {
             let check = Process()
             check.executableURL = URL(fileURLWithPath: node)
-            check.arguments = ["--env-file=\(config.path)", "-e", "const mode=process.env.BOT_HQ_MODE||'full'; const local=mode==='local-text'; const provider=process.env.AXON_MODEL_PROVIDER||'hermes'; const x=(local?['SESSION_SECRET','ALLOWED_EMAILS',...(provider!=='hermes'?[]:['HERMES_URL','HERMES_HOME_PRIMARY'])]:['XAI_API_KEY','COMPOSIO_API_KEY','SESSION_SECRET']).filter(k=>!process.env[k]?.trim()); if(!['full','local-text'].includes(mode)) x.push('valid BOT_HQ_MODE'); if(!['hermes','ollama-local','openai-local'].includes(provider)) x.push('valid AXON_MODEL_PROVIDER'); if(!local&&!process.env.ORGO_API_KEY?.trim()&&!process.env.ORGO_API_KEY_FILE?.trim()) x.push('ORGO_API_KEY (or ORGO_API_KEY_FILE)'); console.log(JSON.stringify({mode,missing:x})); process.exit(x.length?1:0)"]
+            check.arguments = ["--env-file=\(config.path)", "-e", "const mode=process.env.BOT_HQ_MODE||'full'; const local=mode==='local-text'; const provider=process.env.AXON_MODEL_PROVIDER||'hermes'; const x=(local?['SESSION_SECRET','ALLOWED_EMAILS',...(provider!=='hermes'?[]:['HERMES_URL','HERMES_HOME_PRIMARY'])]:['XAI_API_KEY','COMPOSIO_API_KEY','SESSION_SECRET']).filter(k=>!process.env[k]?.trim()); if(!['full','local-text'].includes(mode)) x.push('valid BOT_HQ_MODE'); if(!['hermes','ollama-local','openai-local','codex-cli','openrouter'].includes(provider)) x.push('valid AXON_MODEL_PROVIDER'); if(!local&&!process.env.ORGO_API_KEY?.trim()&&!process.env.ORGO_API_KEY_FILE?.trim()) x.push('ORGO_API_KEY (or ORGO_API_KEY_FILE)'); console.log(JSON.stringify({mode,missing:x})); process.exit(x.length?1:0)"]
             check.environment = ["HOME": fm.homeDirectoryForCurrentUser.path, "PATH": "/usr/bin:/bin"]
             let output = Pipe()
             check.standardOutput = output
@@ -276,7 +276,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
                 if let http = response as? HTTPURLResponse, http.statusCode == 200,
                    let data, let body = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
                    body["ok"] as? Bool == true, body["mode"] as? String == "local-text",
-                   ["hermes", "ollama-local", "openai-local"].contains(body["engine"] as? String ?? ""), body["instanceId"] as? String == profile.instanceID {
+                   ["hermes", "ollama-local", "openai-local", "codex-cli", "openrouter"].contains(body["engine"] as? String ?? ""), body["instanceId"] as? String == profile.instanceID {
                     var login = URLRequest(url: URL(string: "http://127.0.0.1:\(profile.port)/api/auth/local")!)
                     login.httpMethod = "POST"
                     login.setValue(profile.launchToken, forHTTPHeaderField: "X-BotHQ-Launch-Token")
@@ -304,7 +304,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
                 guard let self, let child = self.server, child.isRunning else { return }
                 let started = (try? String(contentsOf: self.support.appendingPathComponent("server.log"), encoding: .utf8))?.contains("[grokbot] server on http://localhost:\(self.port)") == true
                 if started, let http = response as? HTTPURLResponse, http.statusCode == 200,
-                   let data, let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any], ["hermes", "ollama-local", "openai-local"].contains(object["engine"] as? String ?? ""), object["ok"] as? Bool == true,
+                   let data, let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any], ["hermes", "ollama-local", "openai-local", "codex-cli", "openrouter"].contains(object["engine"] as? String ?? ""), object["ok"] as? Bool == true,
                    (!self.localTextMode || (object["mode"] as? String == "local-text" && object["instanceId"] as? String == self.instanceID)) {
                     if self.localTextMode, let token = self.launchToken {
                         var login = URLRequest(url: URL(string: "http://127.0.0.1:\(self.port)/api/auth/local")!)
