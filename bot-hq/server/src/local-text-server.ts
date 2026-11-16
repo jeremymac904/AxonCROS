@@ -12,6 +12,7 @@ import { env } from './env.js';
 import { localModelReady, localModelResponse, localModelURL, localResearchInput, LOCAL_INPUT_BYTES, LocalModelHTTPError } from './local-model.js';
 import { codexCliReply, CodexCliError } from './codex-cli-provider.js';
 import { openRouterReply, openRouterKey, OpenRouterError } from './openrouter-provider.js';
+import { miniMaxReply, miniMaxToken, MiniMaxError } from './minimax-provider.js';
 import { localTextProfile, localTextProfiles } from './local-text-profiles.js';
 import { researchDocuments, researchDocument, researchSnapshotId, researchSnapshotDate, researchNotice } from './local-research-catalog.js';
 import { retrieveResearch, researchPrompt, researchEvidence, savedResearch } from './local-research.js';
@@ -19,8 +20,10 @@ import { retrieveResearch, researchPrompt, researchEvidence, savedResearch } fro
 const usesHermesGateway = env.localModelProvider === 'hermes';
 const usesCodexCli = env.localModelProvider === 'codex-cli';
 const usesOpenRouter = env.localModelProvider === 'openrouter';
+const usesMiniMax = env.localModelProvider === 'minimax';
 const usesLocalModel = env.localModelProvider === 'ollama-local' || env.localModelProvider === 'openai-local';
 const MODEL = usesCodexCli ? (env.codexCliModel || 'gpt-6.1-sol')
+  : usesMiniMax ? (env.minimaxModel || 'MiniMax-M3')
   : usesOpenRouter ? (env.openRouterModel || '')
   : usesLocalModel ? env.localModel
   : 'gpt-6.1-sol';
@@ -175,13 +178,17 @@ function gatewayKey(): string {
   return key;
 }
 async function gatewayRequest(route: string, init: RequestInit = {}, timeout = 8000) {
-  if (usesCodexCli || usesOpenRouter) {
+  if (usesCodexCli || usesOpenRouter || usesMiniMax) {
     if (route !== '/v1/responses' || typeof init.body !== 'string') throw new Error('Unsupported provider operation.');
     const body = JSON.parse(init.body);
     if (typeof body.input !== 'string') throw new Error('This provider requires text.');
     const agentMode = body.agentMode === true;
     const signal = AbortSignal.any([lifetime.signal, AbortSignal.timeout(timeout), ...(init.signal ? [init.signal] : [])]);
-    const text = usesCodexCli
+    const text = usesMiniMax
+      ? await miniMaxReply({
+          authFile: env.minimaxAuthFile, baseUrl: env.minimaxBaseUrl, model: MODEL, timeoutMs: timeout,
+        }, body.input, agentMode, signal)
+      : usesCodexCli
       ? await codexCliReply({
           bin: env.codexCliBin, ownerHome: env.codexCliHome, home: '', model: MODEL,
           workspace: path.join(env.supportDir, 'codex-cli-workspace'),
@@ -274,6 +281,12 @@ app.get('/api/local/status', async (c) => {
         message:ready ? `Connected to the Codex CLI, which signs in with its own ChatGPT account. This route never uses paid credits and never falls back to another provider. It uses the provider's included window to its end and stops when that window is exhausted.`
           : 'The Codex CLI was not found or is not signed in. Open Codex normally and sign in, then check again.'});
     }
+    if (usesMiniMax) {
+      const ready = !!miniMaxToken(env.minimaxAuthFile);
+      return c.json({status:ready ? 'ready' : 'unavailable', model:MODEL, provider:'minimax', metered:false, route:'minimax',
+        message:ready ? `Connected to MiniMax Code with your own sign-in. This app reads that sign-in at call time and never stores it. It never falls back to another provider.`
+          : 'MiniMax Code is not signed in on this Mac. Open MiniMax Code and sign in, then check again.'});
+    }
     if (usesOpenRouter) {
       const ready = !!openRouterKey(env.openRouterKeyFile);
       return c.json({status:ready ? 'ready' : 'unavailable', model:MODEL, provider:'openrouter', metered:true, route:'openrouter',
@@ -290,7 +303,7 @@ app.get('/api/local/status', async (c) => {
     if (!response.ok || !Array.isArray((await response.json()).data)) throw new Error();
     return c.json({ status: 'ready', model: MODEL, route: 'hermes', metered:false, message: 'Connected to your dedicated ChatGPT gateway. Subscription allowance is checked when you send.' });
   } catch {
-    return c.json({ status: 'unavailable', model: MODEL, message: usesLocalModel ? `Start your local Ollama runtime and download ${MODEL}, then check again. Local records remain available without a model. No cloud fallback is enabled.` : usesCodexCli ? 'The Codex CLI is unavailable. Open Codex normally and sign in, then retry.' : usesOpenRouter ? 'OpenRouter is unavailable. Check your key and account, then retry.' : 'The dedicated gateway is unavailable. Start or restart the AxonCROS gateway, then retry.' });
+    return c.json({ status: 'unavailable', model: MODEL, message: usesLocalModel ? `Start your local Ollama runtime and download ${MODEL}, then check again. Local records remain available without a model. No cloud fallback is enabled.` : usesCodexCli ? 'The Codex CLI is unavailable. Open Codex normally and sign in, then retry.' : usesOpenRouter ? 'OpenRouter is unavailable. Check your key and account, then retry.' : usesMiniMax ? 'MiniMax Code is unavailable. Open it and sign in, then retry.' : 'The dedicated gateway is unavailable. Start or restart the AxonCROS gateway, then retry.' });
   }
 });
 app.get('/api/local/chats', (c) => {
@@ -401,6 +414,7 @@ app.post('/api/local/chats/:id/messages', async (c) => {
         // A directly configured provider reports its own honest state. It never
         // falls back to another provider, so the turn simply stops here.
         if(error instanceof CodexCliError)throw new agentActions.AgentError(error.message,error.status);
+        if(error instanceof MiniMaxError)throw new agentActions.AgentError(error.message,error.status);
         if(error instanceof OpenRouterError)throw new agentActions.AgentError(error.message,error.status);
         throw error;
       }

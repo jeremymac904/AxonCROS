@@ -53,6 +53,13 @@ const child = spawn(process.execPath, ['--import', 'tsx', 'server/src/index.ts']
     AXON_CODEX_CLI_HOME: provider === 'codex-cli' ? (process.env.AXON_CODEX_CLI_HOME ?? '') : '',
     AXON_CODEX_CLI_MODEL: provider === 'codex-cli' ? model : '',
     AXON_OPENROUTER_MODEL: provider === 'openrouter' ? model : '',
+    AXON_MINIMAX_MODEL: provider === 'minimax' ? model : '',
+    ...(provider === 'minimax' ? {
+      // The route reads the owner's own MiniMax sign-in; a temporary HOME
+      // would hide it, so the real file is named explicitly.
+      AXON_MINIMAX_AUTH_FILE: process.env.AXON_MINIMAX_AUTH_FILE ?? `${os.homedir()}/.minimax/local-runtime.auth.json`,
+      ...(process.env.AXON_MINIMAX_BASE_URL ? { AXON_MINIMAX_BASE_URL: process.env.AXON_MINIMAX_BASE_URL } : {}),
+    } : {}),
     AXON_OPENROUTER_KEY_FILE: provider === 'openrouter' ? (process.env.AXON_OPENROUTER_KEY_FILE ?? '') : '',
     DB_PATH: dbPath, PORT: String(port), APP_URL: base, SERVER_URL: base,
     SESSION_SECRET: 'synthetic-route-test-session-secret-value',

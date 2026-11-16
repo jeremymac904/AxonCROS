@@ -20,6 +20,7 @@ Change it, then reopen the Mac app. The app reads that file when it starts.
 | `ollama-local` | A local model on this Mac | No |
 | `openai-local` | Any OpenAI-compatible server on this Mac | Depends on that server |
 | `codex-cli` | The Codex CLI installed on this Mac | Included allowance only |
+| `minimax` | MiniMax Code, using your own sign-in on this Mac | Your MiniMax plan |
 | `openrouter` | OpenRouter, using your own key | **Yes — metered** |
 
 ## Your ChatGPT subscription gateway (`hermes`)
@@ -66,6 +67,26 @@ Limits that are deliberate:
   read-only sandbox that cannot read your documents, desktop, downloads or
   credential stores.
 
+## MiniMax Code (`minimax`)
+
+Uses the sign-in you already have in MiniMax Code on this Mac. **AxonCROS
+never stores the credential.** It reads your MiniMax sign-in at the moment it
+sends a turn, keeps it in memory for that request only, and never writes it
+anywhere.
+
+```bash
+AXON_MODEL_PROVIDER=minimax
+AXON_MINIMAX_MODEL=MiniMax-M3
+```
+
+Limits that are deliberate:
+
+- The endpoint host is pinned to MiniMax's own. A configuration file cannot
+  point your sign-in at another host.
+- It never falls back to another provider, and it never retries a turn that was
+  not answered.
+- It uses your existing MiniMax plan, exactly as MiniMax Code itself does.
+
 ## OpenRouter (`openrouter`)
 
 **Metered.** Every token is billed to your own OpenRouter account. It is only
@@ -102,5 +123,9 @@ AXON_TEST_PROVIDER=codex-cli \
 AXON_TEST_MODEL=gpt-6.1-sol \
 AXON_CODEX_CLI_BIN=/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex \
 AXON_CODEX_CLI_HOME=~/.codex \
-node --import tsx server/scripts/axon-codex-cli-test.ts
+node --import tsx server/scripts/axon-model-route-test.ts
+
+AXON_TEST_PROVIDER=minimax \
+AXON_TEST_MODEL=MiniMax-M3 \
+node --import tsx server/scripts/axon-model-route-test.ts
 ```

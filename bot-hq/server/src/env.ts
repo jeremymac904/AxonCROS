@@ -22,7 +22,7 @@ const mode = process.env.BOT_HQ_MODE ?? 'full';
 if (!['full', 'local-text'].includes(mode)) throw new Error('BOT_HQ_MODE must be full or local-text');
 const localTextMode = mode === 'local-text';
 const localModelProvider = process.env.AXON_MODEL_PROVIDER ?? 'hermes';
-if (!['hermes', 'ollama-local', 'openai-local', 'codex-cli', 'openrouter'].includes(localModelProvider)) throw new Error('AXON_MODEL_PROVIDER must be hermes, ollama-local, openai-local, codex-cli or openrouter');
+if (!['hermes', 'ollama-local', 'openai-local', 'codex-cli', 'openrouter', 'minimax'].includes(localModelProvider)) throw new Error('AXON_MODEL_PROVIDER must be hermes, ollama-local, openai-local, codex-cli, openrouter or minimax');
 
 const hermesHome = process.env.HERMES_HOME_PRIMARY ?? path.join(os.homedir(), '.hermes');
 /** Owner-private application directory, beside the database. */
@@ -39,6 +39,10 @@ export const env = {
   codexCliModel: process.env.AXON_CODEX_CLI_MODEL ?? '',
   /** This route uses the provider's included window to its natural end. */
   codexCliStopPercent: Number(process.env.AXON_CODEX_CLI_STOP_PERCENT ?? 100),
+  /** MiniMax Code. The owner's own sign-in is read at call time, never stored. */
+  minimaxAuthFile: process.env.AXON_MINIMAX_AUTH_FILE?.trim() || path.join(os.homedir(), '.minimax', 'local-runtime.auth.json'),
+  minimaxBaseUrl: process.env.AXON_MINIMAX_BASE_URL?.trim() || 'https://agent.minimax.io/mavis/api/v1/llm/v1',
+  minimaxModel: process.env.AXON_MINIMAX_MODEL?.trim() || 'MiniMax-M3',
   /** OpenRouter is metered. It is only ever used when explicitly selected. */
   openRouterBaseUrl: process.env.AXON_OPENROUTER_BASE_URL ?? 'https://openrouter.ai/api/v1',
   openRouterModel: process.env.AXON_OPENROUTER_MODEL ?? '',

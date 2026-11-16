@@ -47,7 +47,7 @@ jobs:
           node --import tsx server/scripts/axon-agent-actions-test.ts
           node --import tsx server/scripts/axon-mcp-test.ts
           if test -f server/scripts/axon-model-mcp-test.ts; then node --import tsx server/scripts/axon-model-mcp-test.ts; fi
-          if test -f server/scripts/axon-codex-cli-test.ts; then node --import tsx server/scripts/axon-codex-cli-test.ts; fi
+          if test -f server/scripts/axon-model-route-test.ts; then node --import tsx server/scripts/axon-model-route-test.ts; fi
           node --import tsx server/scripts/axon-whatsapp-test.ts
           node --import tsx server/scripts/axon-whatsapp-actions-test.ts
           node web/scripts/google-agent-worker-test.mjs
