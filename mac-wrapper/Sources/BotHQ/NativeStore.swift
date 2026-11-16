@@ -9,6 +9,8 @@ final class NativeStore {
     private let support: URL
     private let allowedFolderRoot: URL?
     var emailSignatureDirectory: URL { support.appendingPathComponent("email-signature", isDirectory: true) }
+    /// The owner's private application support directory.
+    var supportDirectory: URL { support }
     var messagesCredentialService: String { service + ".messages" }
     var contactCredentialService: String { service + ".contacts" }
     init(support: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Bot HQ"),

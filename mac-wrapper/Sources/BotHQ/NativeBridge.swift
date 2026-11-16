@@ -29,6 +29,9 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply, AVSpeechSyn
     private var speechSession: String?
     private var utterance: AVSpeechUtterance?
     var isCapturing: Bool { captureSession != nil }
+    /// Called after the owner's configuration changed and the server must be
+    /// restarted to read it.
+    var restartServer: (() -> Void)?
 
     init(port: UInt16, store: NativeStore = NativeStore()) {
         self.port = port
@@ -185,10 +188,16 @@ final class NativeBridge: NSObject, WKScriptMessageHandlerWithReply, AVSpeechSyn
             return
         }
         switch action {
+        case "detectTools":
+            replyHandler(["tools": NativeToolDiscovery.detect().map { $0.dictionary }], nil)
+        case "selectModelRoute":
+            let result = NativeToolDiscovery.writeModelRoute(configPath: store.supportDirectory.appendingPathComponent(".env"), toolId: body["toolId"] as? String ?? "")
+            if result["ok"] != nil { DispatchQueue.main.async { [weak self] in self?.restartServer?() } }
+            replyHandler(result, result["error"] as? String)
         case "capabilities":
             let language = body["language"] as? String ?? "en-US"
             let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language))
-            replyHandler(["native": true, "filePicker": true, "downloads": true, "secureStore": true, "folderGrants": true, "contacts": true, "googleWorkspace": true, "connectorCredentialPicker": true,
+            replyHandler(["native": true, "filePicker": true, "downloads": true, "secureStore": true, "folderGrants": true, "contacts": true, "googleWorkspace": true, "connectorCredentialPicker": true, "toolDiscovery": true,
                           "dictation": recognizer?.supportsOnDeviceRecognition == true,
                           "dictationProvider": "Apple on-device Speech", "cloudFallback": false,
                           "microphonePermission": microphonePermission(),

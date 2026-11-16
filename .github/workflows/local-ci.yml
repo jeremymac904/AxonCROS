@@ -72,5 +72,6 @@ jobs:
           bash mac-wrapper/script/test_native_messages.sh
           if test -f mac-wrapper/script/test_native_picker_process.sh; then bash mac-wrapper/script/test_native_picker_process.sh; fi
           bash mac-wrapper/script/test_native_path_selection.sh
+          if test -f mac-wrapper/script/test_native_tool_discovery.sh; then bash mac-wrapper/script/test_native_tool_discovery.sh; fi
       - name: Compile native wrapper without installing or launching
         run: bash mac-wrapper/script/build.sh

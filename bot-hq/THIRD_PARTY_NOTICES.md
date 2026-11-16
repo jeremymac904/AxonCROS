@@ -71,6 +71,14 @@ The source lockfile records exact dependency resolutions; the release workflow
 records an inventory rather than implying all dependencies use MIT.
 
 
+## Local tool detection
+
+The Settings → Model page detects the command line tools already installed on
+this Mac. The approach — a small catalog of known tools, reported with the
+place each one lives and whether it is present — follows the agent hub design
+used by AionUi (https://github.com/iOfficeAI/AionUi, Apache License 2.0).
+No AionUi source code is included here.
+
 ## Direct WhatsApp linked-device dependencies
 
 The optional direct WhatsApp Web adapter uses these pinned runtime packages:

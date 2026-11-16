@@ -15,6 +15,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
     var server: Process?
     var log: FileHandle?
     var quitting = false
+    /// True while the server is being restarted on purpose after a
+    /// configuration change. It is not a failure.
+    var restartingServer = false
     var localTextMode = false
     var launchToken: String?
     let instanceID = UUID().uuidString
@@ -42,6 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         config.userContentController.addScriptMessageHandler(nativeBridge, contentWorld: .page, name: "axoncros")
         web = WKWebView(frame: .zero, configuration: config)
         nativeBridge.webView = web
+        nativeBridge.restartServer = { [weak self] in self?.restartServer() }
         web.navigationDelegate = self
         web.uiDelegate = self
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1440, height: 1000), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
@@ -249,7 +253,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
             proc.standardError = log
             proc.terminationHandler = { [weak self] process in
                 DispatchQueue.main.async {
-                    guard let self, !self.quitting else { return }
+                    guard let self, !self.quitting, !self.restartingServer else { return }
                     self.show("AxonCROS server stopped", "The local server exited (status \(process.terminationStatus)). Check your configuration and the log at:\n\(logURL.path)\n\nReopen AxonCROS after correcting the issue.")
                 }
             }
@@ -287,6 +291,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
                 }
             }
         }.resume()
+    }
+
+    /// Restart the local server so it reads an updated configuration. The
+    /// owner session and every record stay where they are.
+    func restartServer() {
+        guard !quitting, let running = server, running.isRunning else { return }
+        restartingServer = true
+        running.terminate()
+        server = nil
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+            guard let self, !self.quitting else { return }
+            self.restartingServer = false
+            self.start()
+        }
     }
 
     func waitForServer(attempt: Int) {

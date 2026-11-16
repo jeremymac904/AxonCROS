@@ -1,6 +1,6 @@
 /* AxonCROS workspace: supplied navy/steel/silver identity, scoped to local mode. */
 .axon-shell, .axon-boot { --axon-ink:#18212e; --axon-muted:#647385; --axon-soft:#8b97a7; --axon-navy:#142e50; --axon-steel:#496785; --axon-line:#dce3ec; --axon-pale:#f2f5f9; --axon-canvas:#f7f9fc; --color-text-primary:var(--axon-ink); --color-text-secondary:var(--axon-muted); --color-text-tertiary:var(--axon-soft); --color-border-secondary:var(--axon-line); --color-primary:var(--axon-navy); --color-bg-active:#e9eff7; --color-bg-hover:#f0f4f9; color:var(--axon-ink); font-family:Geist,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-size:14px; }
-.axon-shell { height:100%; width:100%; display:grid; grid-template-columns:76px minmax(0,1fr); background:#fff; overflow:hidden; }
+.axon-shell { height:100%; width:100%; display:grid; grid-template-columns:76px minmax(0,1fr); grid-template-rows:minmax(0,1fr); background:#fff; overflow:hidden; }
 .axon-shell--chat { grid-template-columns:76px 238px minmax(0,1fr); }
 .axon-shell--inspector { grid-template-columns:76px 238px minmax(320px,1fr) 300px; }
 .axon-shell [hidden] { display:none!important; }
