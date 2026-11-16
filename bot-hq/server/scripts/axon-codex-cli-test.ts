@@ -25,7 +25,7 @@ import { spawn } from 'node:child_process';
 if (!process.env.AXON_TEST_PROVIDER) {
   console.log(JSON.stringify({
     passed: true, skipped: true,
-    reason: 'Set AXON_TEST_PROVIDER (and the route's own settings) to exercise a model route. This test needs a real provider, so it skips in continuous integration.',
+    reason: 'Set AXON_TEST_PROVIDER and the settings of the route to exercise it. This test needs a real provider, so it skips in continuous integration.',
   }, null, 2));
   process.exit(0);
 }

@@ -52,8 +52,9 @@ const AGENT_INSTRUCTIONS = 'Follow the controlling agent boundary and return onl
  * downloads, shell history or credential stores, and it may not write outside
  * its own CODEX_HOME and the application scratch directory.
  */
-export function sandboxProfile(privateDir: string, codexHome: string, workspace: string): string {
-  const home = path.resolve(path.dirname(path.dirname(path.resolve(codexHome))));
+export function sandboxProfile(privateDir: string, ownerHome: string, codexHome: string, workspace: string): string {
+  // The owner's home directory, derived from their own Codex profile.
+  const home = path.resolve(path.dirname(path.resolve(ownerHome)));
   const deny = (p: string) => `(deny file-read* file-write* (subpath "${p}"))`;
   const denyFile = (p: string) => `(deny file-read* file-write* (literal "${p}"))`;
   return [
@@ -78,6 +79,7 @@ export function sandboxProfile(privateDir: string, codexHome: string, workspace:
     deny(path.join(home, 'Desktop')),
     deny(path.join(home, 'Downloads')),
     // The CLI owns its own sign-in material. Nothing else may read it.
+    `(allow file-read* file-write* (subpath "${path.resolve(ownerHome)}"))`,
     `(allow file-read* file-write* (subpath "${path.resolve(codexHome)}"))`,
     `(allow file-read* file-write* (subpath "${path.resolve(workspace)}"))`,
     `(allow file-read* file-write* (subpath "${path.resolve(privateDir)}"))`,
@@ -117,7 +119,7 @@ export async function codexCliReply(options: CodexCliOptions, input: string, age
   try { fs.symlinkSync(ownerAuth, isolatedAuth); } catch { /* a real file may already be there */ }
   options.home = isolatedHome;
   const profile = path.join(options.privateDir, 'codex-cli-isolation.sb');
-  fs.writeFileSync(profile, sandboxProfile(options.privateDir, options.home, options.workspace), { mode: 0o600 });
+  fs.writeFileSync(profile, sandboxProfile(options.privateDir, options.ownerHome, isolatedHome, options.workspace), { mode: 0o600 });
 
   const useSandbox = process.env.AXON_CODEX_CLI_NO_SANDBOX !== '1';
   const child: ChildProcess = spawn(useSandbox ? '/usr/bin/sandbox-exec' : options.bin, useSandbox ? ['-f', profile, options.bin, 'app-server'] : ['app-server'], {
